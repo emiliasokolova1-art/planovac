@@ -1,107 +1,108 @@
 <!DOCTYPE html>
-<html lang="sk">
+<html lang="sk" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Brenner AMS — Plánovač meraní</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,sans-serif;font-size:14px;background:#f5f5f5;color:#1a1a1a}
-.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center}
-.login-card{background:#fff;border-radius:12px;border:1px solid #e0e0e0;padding:2rem;width:100%;max-width:380px}
-.app{max-width:1200px;margin:0 auto;padding:1rem}
+:root {
+  --bg:#f5f5f5;--bg2:#fff;--bg3:#fafafa;--bg4:#f0f0f0;
+  --text:#1a1a1a;--text2:#666;--text3:#888;--text4:#aaa;
+  --border:#e0e0e0;--border2:#d0d0d0;--border3:#f0f0f0;
+  --card:#fff;--input:#fff;--input-border:#e0e0e0;
+  --btn-bg:#fff;--btn-hover:#f5f5f5;
+  --shadow:0 2px 8px rgba(0,0,0,.06);
+}
+[data-theme="dark"] {
+  --bg:#1a1a1a;--bg2:#242424;--bg3:#2a2a2a;--bg4:#333;
+  --text:#f0f0f0;--text2:#bbb;--text3:#888;--text4:#555;
+  --border:#333;--border2:#444;--border3:#2e2e2e;
+  --card:#242424;--input:#2e2e2e;--input-border:#444;
+  --btn-bg:#2e2e2e;--btn-hover:#383838;
+  --shadow:0 2px 8px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box;margin:0;padding:0;transition:background .2s,color .2s,border-color .2s}
+body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:var(--text);min-height:100vh}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+.login-card{background:var(--card);border-radius:12px;border:1px solid var(--border);padding:2rem;width:100%;max-width:380px;box-shadow:var(--shadow)}
+.app{max-width:1300px;margin:0 auto;padding:1rem}
 .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px}
-.tabs{display:flex;gap:4px;border-bottom:1px solid #e0e0e0;margin-bottom:1.5rem;flex-wrap:wrap}
-.tab{padding:8px 16px;cursor:pointer;border-radius:8px 8px 0 0;font-size:13px;color:#666;border:1px solid transparent;border-bottom:none;background:transparent;white-space:nowrap}
-.tab.active{color:#1a1a1a;background:#fff;border-color:#e0e0e0;font-weight:500}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:1.5rem;flex-wrap:wrap}
+.tab{padding:8px 16px;cursor:pointer;border-radius:8px 8px 0 0;font-size:13px;color:var(--text2);border:1px solid transparent;border-bottom:none;background:transparent;white-space:nowrap}
+.tab.active{color:var(--text);background:var(--card);border-color:var(--border);font-weight:500}
 .section{display:none}.section.active{display:block}
-.card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem}
-.card-title{font-size:11px;font-weight:500;color:#888;margin-bottom:1rem;text-transform:uppercase;letter-spacing:.05em}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem;box-shadow:var(--shadow)}
+.card-title{font-size:11px;font-weight:500;color:var(--text3);margin-bottom:1rem;text-transform:uppercase;letter-spacing:.05em}
 .field{display:flex;flex-direction:column;gap:4px}
-.field label{font-size:12px;color:#666}
-.field input,.field select,.field textarea{padding:7px 10px;border:1px solid #e0e0e0;border-radius:8px;background:#fff;color:#1a1a1a;font-size:13px;font-family:inherit}
+.field label{font-size:12px;color:var(--text2)}
+.field input,.field select,.field textarea{padding:7px 10px;border:1px solid var(--input-border);border-radius:8px;background:var(--input);color:var(--text);font-size:13px;font-family:inherit}
 .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:#999}
 .field textarea{resize:vertical;min-height:60px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
-.btn{height:36px;padding:0 16px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;color:#1a1a1a;cursor:pointer;font-size:13px;font-family:inherit;white-space:nowrap}
-.btn:hover{background:#f5f5f5}
+.btn{height:36px;padding:0 16px;border:1px solid var(--border2);border-radius:8px;background:var(--btn-bg);color:var(--text);cursor:pointer;font-size:13px;font-family:inherit;white-space:nowrap}
+.btn:hover{background:var(--btn-hover)}
 .btn:disabled{opacity:.5;cursor:not-allowed}
-.btn-primary{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
-.btn-primary:hover{background:#333}
+.btn-primary{background:var(--text);color:var(--bg);border-color:var(--text)}
+.btn-primary:hover{opacity:.85}
 .btn-danger{color:#c0392b;border-color:#c0392b}
 .btn-danger:hover{background:#fff5f5}
 .btn-sm{height:28px;padding:0 10px;font-size:12px}
-.spinner{display:inline-block;width:14px;height:14px;border:2px solid #ccc;border-top-color:#333;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid #ccc;border-top-color:#666;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* TABUĽKA */
 .tbl-wrap{overflow-x:auto}
 .tbl{width:100%;border-collapse:collapse;font-size:12px}
-.tbl th{font-size:11px;font-weight:500;color:#888;text-align:left;padding:8px 10px;border-bottom:1px solid #e0e0e0;white-space:nowrap;background:#fafafa;cursor:pointer;user-select:none}
-.tbl th:hover{color:#1a1a1a}
-.tbl td{padding:7px 10px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
-.tbl tr:hover td{background:#fafafa}
-.tbl tr.no-date td{opacity:.7}
-
-/* OSOBY — farby */
+.tbl th{font-size:11px;font-weight:500;color:var(--text3);text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap;background:var(--bg3);cursor:pointer;user-select:none}
+.tbl th:hover{color:var(--text)}
+.tbl td{padding:7px 10px;border-bottom:1px solid var(--border3);vertical-align:middle;color:var(--text)}
+.tbl tr:hover td{background:var(--bg3)}
+.tbl tr.no-date td{opacity:.65}
+.tbl tr.nova-nevidena td{background:#fffbeb}
+[data-theme="dark"] .tbl tr.nova-nevidena td{background:#2a2600}
 .os-Lenka{background:#e8f4fd;color:#1a6fa8;border-color:#b8d9f0}
 .os-Katka{background:#fde8f4;color:#a81a6f;border-color:#f0b8d9}
 .os-Emilia{background:#edf8e8;color:#2d7a1a;border-color:#bce8b0}
 .os-Veducky{background:#fdf5e8;color:#a87a1a;border-color:#f0d9b8}
 .os-Andrej{background:#f0e8fd;color:#6a1aa8;border-color:#d0b8f0}
 .chip-os{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;border:1px solid transparent}
-
-/* STAV */
 .stav-objednane{background:#e6f1fb;color:#185fa5}
 .stav-odmerane{background:#eaf3de;color:#3b6d11}
 .stav-domerat{background:#faeeda;color:#854f0b}
 .stav-zrusene{background:#fcebeb;color:#a32d2d}
 .stav-prelozene{background:#f5e8fd;color:#7a1aa8}
 .chip-stav{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500}
-
-/* FAKTOR */
-.chip-faktor{display:inline-block;padding:2px 7px;border-radius:6px;font-size:11px;background:#f0f0f0;color:#555}
-
-/* FILTER BAR */
+.chip-faktor{display:inline-block;padding:2px 7px;border-radius:6px;font-size:11px;background:var(--bg4);color:var(--text2)}
 .filter-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:1rem}
-.filter-bar select,.filter-bar input{height:32px;padding:0 10px;border:1px solid #e0e0e0;border-radius:8px;background:#fff;color:#1a1a1a;font-size:12px;font-family:inherit}
-.filter-bar select:focus,.filter-bar input:focus{outline:none;border-color:#999}
-
-/* KOLÍZIA */
-.koliz-warn{background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:10px 14px;font-size:13px;color:#856404;margin-bottom:1rem;display:none}
-
-/* KALENDÁR */
-.kal-header{display:flex;align-items:center;gap:12px;margin-bottom:1rem}
+.filter-bar select,.filter-bar input{height:32px;padding:0 10px;border:1px solid var(--input-border);border-radius:8px;background:var(--input);color:var(--text);font-size:12px;font-family:inherit}
+.koliz-warn{background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:10px 14px;font-size:13px;color:#856404;margin-bottom:1rem}
+.kal-header{display:flex;align-items:center;gap:12px;margin-bottom:1rem;flex-wrap:wrap}
 .kal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
-.kal-day-name{text-align:center;font-size:11px;font-weight:500;color:#888;padding:4px}
-.kal-cell{min-height:80px;background:#fff;border:1px solid #e0e0e0;border-radius:6px;padding:4px;font-size:11px}
-.kal-cell.dnes{border-color:#1a1a1a;border-width:2px}
-.kal-cell.iny-mesiac{background:#f9f9f9;opacity:.5}
-.kal-date{font-weight:500;color:#666;margin-bottom:2px;font-size:11px}
+.kal-day-name{text-align:center;font-size:11px;font-weight:500;color:var(--text3);padding:4px}
+.kal-cell{min-height:80px;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:4px;font-size:11px}
+.kal-cell.dnes{border-color:var(--text);border-width:2px}
+.kal-cell.iny-mesiac{opacity:.4}
+.kal-date{font-weight:500;color:var(--text2);margin-bottom:2px;font-size:11px}
 .kal-event{border-radius:4px;padding:2px 4px;margin-bottom:2px;font-size:10px;cursor:pointer;border:1px solid transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.kal-event:hover{opacity:.8}
-
-/* MODAL */
-.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:100;display:flex;align-items:center;justify-content:center;padding:1rem}
-.modal{background:#fff;border-radius:12px;width:100%;max-width:680px;max-height:90vh;overflow-y:auto;padding:1.5rem}
-.modal-title{font-size:16px;font-weight:500;margin-bottom:1.5rem}
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:100;display:flex;align-items:flex-start;justify-content:center;padding:1rem;overflow-y:auto}
+.modal{background:var(--card);border-radius:12px;width:100%;max-width:720px;padding:1.5rem;margin:auto;box-shadow:var(--shadow)}
+.modal-title{font-size:16px;font-weight:500;margin-bottom:1.5rem;color:var(--text)}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:1.5rem;flex-wrap:wrap}
-
+.sep{height:1px;background:var(--border);margin:1rem 0}
 .info-box{background:#f0f7ff;border-radius:8px;padding:10px 14px;font-size:12px;color:#444;margin-bottom:1rem;border:1px solid #d0e8ff}
-.sep{height:1px;background:#e0e0e0;margin:1rem 0}
-@media(max-width:700px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.app{padding:.5rem}}
+[data-theme="dark"] .info-box{background:#1a2a3a;color:#aaa;border-color:#2a4a6a}
+.notify-banner{background:#fffbeb;border:1px solid #f59e0b;border-radius:10px;padding:12px 16px;margin-bottom:1rem;font-size:13px;color:#92400e}
+[data-theme="dark"] .notify-banner{background:#2a2000;border-color:#b45309;color:#fcd34d}
+.badge-nova{display:inline-block;width:8px;height:8px;background:#f59e0b;border-radius:50%;margin-left:4px;vertical-align:middle}
+@media(max-width:700px){.grid2,.grid3{grid-template-columns:1fr}.app{padding:.5rem}}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
 <div class="login-wrap" id="login-screen">
   <div class="login-card">
     <div style="font-size:28px;margin-bottom:.5rem">📅</div>
-    <div style="font-size:20px;font-weight:500;margin-bottom:.3rem">Brenner AMS</div>
-    <div style="font-size:13px;color:#666;margin-bottom:1.5rem">Plánovač meraní</div>
+    <div style="font-size:20px;font-weight:500;margin-bottom:.3rem;color:var(--text)">Brenner AMS</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:1.5rem">Plánovač meraní</div>
     <div class="field" style="margin-bottom:10px">
       <label>Email</label>
       <input type="email" id="login-email" placeholder="vas@email.sk">
@@ -115,19 +116,21 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:#f5f5f5;color:#1
   </div>
 </div>
 
-<!-- APP -->
 <div id="app-screen" style="display:none">
 <div class="app">
   <div class="topbar">
     <div>
-      <div style="font-size:18px;font-weight:500">📅 Plánovač meraní</div>
-      <div style="font-size:12px;color:#888" id="user-label"></div>
+      <div style="font-size:18px;font-weight:500">📅 Brenner AMS — Plánovač</div>
+      <div style="font-size:12px;color:var(--text2)" id="user-label"></div>
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
       <button class="btn btn-sm" id="btn-nova" style="display:none" onclick="otvorModal()">+ Nová objednávka</button>
+      <button class="btn btn-sm" onclick="toggleDark()">🌙 Dark mode</button>
       <button class="btn btn-sm btn-danger" onclick="odhlasit()">Odhlásiť</button>
     </div>
   </div>
+
+  <div id="notify-area"></div>
 
   <div class="tabs">
     <div class="tab active" id="tab-tabulka" onclick="showSec('tabulka')">📋 Tabuľka</div>
@@ -154,106 +157,104 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:#f5f5f5;color:#1
         <option>objednané</option><option>odmerané</option>
         <option>domerať</option><option>zrušené</option><option>preložené</option>
       </select>
-      <select id="f-rok" onchange="renderTabulka()">
-        <option value="">Všetky roky</option>
-      </select>
+      <select id="f-rok" onchange="renderTabulka()"><option value="">Všetky roky</option></select>
       <input type="text" id="f-search" placeholder="🔍 Hľadať..." style="min-width:160px" oninput="renderTabulka()">
       <button class="btn btn-sm" onclick="resetFiltre()">Zrušiť filtre</button>
+      <button class="btn btn-sm" onclick="exportCSV()">📥 Export CSV</button>
     </div>
     <div class="card" style="padding:0">
       <div class="tbl-wrap">
         <table class="tbl">
-          <thead>
-            <tr>
-              <th onclick="sortBy('evCislo')">Ev. číslo ↕</th>
-              <th onclick="sortBy('objednavatel')">Objednávateľ ↕</th>
-              <th onclick="sortBy('kontakt')">Kontaktná osoba</th>
-              <th>Mobil</th>
-              <th onclick="sortBy('osoba')">Zodpovedný ↕</th>
-              <th onclick="sortBy('faktor')">Faktor ↕</th>
-              <th onclick="sortBy('termin')">Termín ↕</th>
-              <th>Čas</th>
-              <th>Miesto</th>
-              <th onclick="sortBy('stav')">Stav ↕</th>
-              <th>Poznámka</th>
-              <th></th>
-            </tr>
-          </thead>
+          <thead><tr>
+            <th onclick="sortBy('evCislo')">Ev. číslo ↕</th>
+            <th onclick="sortBy('objednavatel')">Objednávateľ ↕</th>
+            <th onclick="sortBy('kontakt')">Kontakt</th>
+            <th>Mobil</th>
+            <th onclick="sortBy('osoba')">Zodpovedný ↕</th>
+            <th onclick="sortBy('faktor')">Faktor ↕</th>
+            <th onclick="sortBy('termin')">Termín ↕</th>
+            <th>Čas</th>
+            <th>Miesto</th>
+            <th onclick="sortBy('stav')">Stav ↕</th>
+            <th>Poznámka</th>
+            <th>Videli</th>
+            <th></th>
+          </tr></thead>
           <tbody id="tbl-body"></tbody>
         </table>
       </div>
-      <div id="tbl-info" style="padding:12px 16px;font-size:12px;color:#888;border-top:1px solid #f0f0f0"></div>
+      <div id="tbl-info" style="padding:10px 16px;font-size:12px;color:var(--text3);border-top:1px solid var(--border3)"></div>
     </div>
   </div>
 
   <!-- KALENDÁR -->
   <div id="sec-kalendar" class="section">
     <div class="kal-header">
-      <button class="btn btn-sm" onclick="zmenMesiac(-1)">← Predchádzajúci</button>
+      <button class="btn btn-sm" onclick="zmenMesiac(-1)">←</button>
       <div style="font-size:16px;font-weight:500;min-width:180px;text-align:center" id="kal-nadpis"></div>
-      <button class="btn btn-sm" onclick="zmenMesiac(1)">Nasledujúci →</button>
+      <button class="btn btn-sm" onclick="zmenMesiac(1)">→</button>
       <button class="btn btn-sm" onclick="dnesKal()">Dnes</button>
-      <select id="kal-filter-osoba" onchange="renderKalendar()" style="height:32px;padding:0 10px;border:1px solid #e0e0e0;border-radius:8px;font-size:12px">
+      <select id="kal-f-osoba" onchange="renderKalendar()" style="height:32px;padding:0 10px;border:1px solid var(--input-border);border-radius:8px;font-size:12px;background:var(--input);color:var(--text)">
         <option value="">Všetky osoby</option>
         <option>Lenka</option><option>Katka</option><option>Emilia</option>
         <option>Veducky</option><option>Andrej</option>
       </select>
     </div>
-    <div class="kal-grid" id="kal-nazvy-dni"></div>
+    <div class="kal-grid" id="kal-nazvy"></div>
     <div class="kal-grid" id="kal-grid"></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:1rem">
-      <span style="font-size:12px;color:#888">Legenda:</span>
-      <span class="chip-os os-Lenka" style="font-size:11px">Lenka</span>
-      <span class="chip-os os-Katka" style="font-size:11px">Katka</span>
-      <span class="chip-os os-Emilia" style="font-size:11px">Emilia</span>
-      <span class="chip-os os-Veducky" style="font-size:11px">Veducky</span>
-      <span class="chip-os os-Andrej" style="font-size:11px">Andrej</span>
+      <span style="font-size:12px;color:var(--text3)">Legenda:</span>
+      <span class="chip-os os-Lenka">Lenka</span><span class="chip-os os-Katka">Katka</span>
+      <span class="chip-os os-Emilia">Emilia</span><span class="chip-os os-Veducky">Veducky</span>
+      <span class="chip-os os-Andrej">Andrej</span>
     </div>
   </div>
 
-  <!-- MOJE MERANIA -->
+  <!-- MOJE -->
   <div id="sec-moje" class="section">
-    <div class="info-box" id="moje-info"></div>
+    <div class="info-box" id="moje-info-box"></div>
     <div class="filter-bar">
       <select id="mf-stav" onchange="renderMoje()">
         <option value="">Všetky stavy</option>
         <option>objednané</option><option>odmerané</option>
         <option>domerať</option><option>zrušené</option><option>preložené</option>
       </select>
-      <select id="mf-rok" onchange="renderMoje()">
-        <option value="">Všetky roky</option>
-      </select>
+      <select id="mf-rok" onchange="renderMoje()"><option value="">Všetky roky</option></select>
     </div>
     <div class="card" style="padding:0">
       <div class="tbl-wrap">
         <table class="tbl">
-          <thead>
-            <tr>
-              <th>Ev. číslo</th><th>Objednávateľ</th><th>Faktor</th>
-              <th>Termín</th><th>Čas</th><th>Miesto</th><th>Stav</th><th>Poznámka</th><th></th>
-            </tr>
-          </thead>
+          <thead><tr>
+            <th>Ev. číslo</th><th>Objednávateľ</th><th>Faktor</th>
+            <th>Termín</th><th>Čas</th><th>Miesto</th><th>Stav</th>
+            <th>Moja poznámka</th><th></th>
+          </tr></thead>
           <tbody id="moje-body"></tbody>
         </table>
       </div>
-      <div id="moje-info2" style="padding:12px 16px;font-size:12px;color:#888;border-top:1px solid #f0f0f0"></div>
+      <div id="moje-info2" style="padding:10px 16px;font-size:12px;color:var(--text3);border-top:1px solid var(--border3)"></div>
     </div>
   </div>
 </div>
 </div>
 
-<!-- MODAL — nová/edit objednávka -->
+<!-- MODAL OBJEDNÁVKA -->
 <div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target===this)zatvorModal()">
   <div class="modal">
     <div class="modal-title" id="modal-title">Nová objednávka</div>
-    <div id="koliz-warn" class="koliz-warn"></div>
+    <div id="koliz-warn" class="koliz-warn" style="display:none"></div>
 
     <div class="grid2" style="gap:12px;margin-bottom:12px">
-      <div class="field"><label>Evidenčné číslo</label><input id="m-evcislo" placeholder="napr. PA-46/2025"></div>
       <div class="field"><label>Stav</label>
         <select id="m-stav">
           <option>objednané</option><option>odmerané</option>
           <option>domerať</option><option>zrušené</option><option>preložené</option>
+        </select>
+      </div>
+      <div class="field"><label>Zodpovedný za Brenner AMS</label>
+        <select id="m-osoba" onchange="checkKolizia()">
+          <option>Lenka</option><option>Katka</option><option>Emilia</option>
+          <option>Veducky</option><option>Andrej</option>
         </select>
       </div>
     </div>
@@ -265,26 +266,22 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:#f5f5f5;color:#1
       <div class="field"><label>Mobil</label><input id="m-mobil" placeholder="+421 9xx xxx xxx"></div>
       <div class="field"><label>Email</label><input id="m-mail" type="email" placeholder="kontakt@firma.sk"></div>
     </div>
+
+    <div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:12px">
+      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px">Meraný faktor / faktory</div>
+      <div id="faktory-list"></div>
+      <button class="btn btn-sm" onclick="pridajFaktor()" style="margin-top:8px">+ Pridať ďalší faktor</button>
+    </div>
+
     <div class="grid3" style="gap:12px;margin-bottom:12px">
-      <div class="field"><label>Zodpovedný za Brenner AMS</label>
-        <select id="m-osoba">
-          <option>Lenka</option><option>Katka</option><option>Emilia</option>
-          <option>Veducky</option><option>Andrej</option>
-        </select>
-      </div>
-      <div class="field"><label>Meraný faktor</label>
-        <select id="m-faktor">
-          <option>H-PP</option><option>H-ŽP</option><option>HS</option>
-          <option>V</option><option>PA</option><option>TVM</option>
-          <option>TM</option><option>SA</option><option>O</option>
-        </select>
-      </div>
       <div class="field"><label>Termín merania (nepovinné)</label>
         <input type="date" id="m-termin" onchange="checkKolizia()">
       </div>
-    </div>
-    <div class="grid2" style="gap:12px;margin-bottom:12px">
-      <div class="field"><label>Čas merania</label><input type="time" id="m-cas"></div>
+      <div class="field"><label>Čas merania</label>
+        <select id="m-cas">
+          <option value="">—</option>
+        </select>
+      </div>
       <div class="field"><label>Miesto merania / Adresa</label><input id="m-miesto" placeholder="Adresa prevádzky"></div>
     </div>
     <div class="field" style="margin-bottom:12px">
@@ -298,19 +295,54 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:#f5f5f5;color:#1
   </div>
 </div>
 
-<!-- MODAL — detail / úprava stavu -->
+<!-- MODAL DETAIL -->
 <div class="modal-overlay" id="modal-detail" style="display:none" onclick="if(event.target===this)zatvorDetail()">
   <div class="modal">
-    <div class="modal-title" id="det-title">Detail objednávky</div>
+    <div class="modal-title" id="det-title"></div>
     <div id="det-content"></div>
     <div class="modal-actions" id="det-actions"></div>
+  </div>
+</div>
+
+<!-- MODAL ZMENA STAVU -->
+<div class="modal-overlay" id="modal-stav" style="display:none" onclick="if(event.target===this)gi('modal-stav').style.display='none'">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-title">Zmeniť stav objednávky</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:1rem" id="stav-modal-info"></div>
+    <div class="field" style="margin-bottom:1rem">
+      <label>Nový stav</label>
+      <select id="stav-select" style="height:40px;font-size:14px">
+        <option>objednané</option><option>odmerané</option>
+        <option>domerať</option><option>zrušené</option><option>preložené</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="gi('modal-stav').style.display='none'">Zrušiť</button>
+      <button class="btn btn-primary" onclick="ulozitStav()">Uložiť stav</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MOJA POZNÁMKA -->
+<div class="modal-overlay" id="modal-pozn" style="display:none" onclick="if(event.target===this)gi('modal-pozn').style.display='none'">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-title">Moja poznámka k meraniu</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:1rem" id="pozn-modal-info"></div>
+    <div class="field" style="margin-bottom:1rem">
+      <label>Poznámka</label>
+      <textarea id="pozn-input" style="min-height:100px" placeholder="Tvoja osobná poznámka k tomuto meraniu..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="gi('modal-pozn').style.display='none'">Zrušiť</button>
+      <button class="btn btn-primary" onclick="ulozitPoznamku()">Uložiť</button>
+    </div>
   </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, doc, setDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const fbApp = initializeApp({
   apiKey:"AIzaSyBF-T03wUuFidKhrECdY7eurYx1H3fYd_w",
@@ -323,19 +355,103 @@ const fbApp = initializeApp({
 const auth = getAuth(fbApp);
 const db = getFirestore(fbApp);
 
-// ŠÉFOV EMAIL — upraviť podľa skutočného emailu šéfa
-const SEF_EMAIL = 'emilia.sokolova11@gmail.com';
+// ── KONFIGURÁCIA POUŽÍVATEĽOV ──────────────────────────────
+// Uprav emaily podľa skutočných emailov tímu
+const USERS = {
+  'sef@brenner.sk':     {osoba:'Lenka', isSef:true},
+  'lenka@brenner.sk':   {osoba:'Lenka', isSef:false},
+  'katka@brenner.sk':   {osoba:'Katka', isSef:false},
+  'emilia@brenner.sk':  {osoba:'Emilia', isSef:false},
+  'veducky@brenner.sk': {osoba:'Veducky', isSef:false},
+  'andrej@brenner.sk':  {osoba:'Andrej', isSef:false},
+};
 
 let currentUser = null;
+let currentOsoba = '';
 let isSef = false;
 let objednavky = [];
 let editId = null;
+let stavEditId = null;
+let poznEditId = null;
 let kalRok = new Date().getFullYear();
 let kalMesiac = new Date().getMonth();
 let sortKol = 'termin';
 let sortAsc = true;
+let faktoryCount = 1;
 
-// AUTH
+// ── DARK MODE ──────────────────────────────────────────────
+window.toggleDark = function(){
+  const t = document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',t);
+  localStorage.setItem('theme',t);
+};
+const savedTheme = localStorage.getItem('theme');
+if(savedTheme) document.documentElement.setAttribute('data-theme',savedTheme);
+
+// ── ČAS — intervaly po 15 min ─────────────────────────────
+function naplnCasy(){
+  const sel = gi('m-cas'); if(!sel) return;
+  sel.innerHTML = '<option value="">—</option>';
+  for(let h=6;h<=20;h++){
+    for(let m=0;m<60;m+=15){
+      const val = String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+      const op = document.createElement('option');
+      op.value = val; op.textContent = val;
+      if(val==='08:00') op.selected = true;
+      sel.appendChild(op);
+    }
+  }
+}
+
+// ── FAKTORY ───────────────────────────────────────────────
+const FAKTORY = ['H-PP','H-ŽP','HS','V','PA','TVM','TM','SA','O'];
+
+window.pridajFaktor = function(){
+  faktoryCount++;
+  const wrap = gi('faktory-list');
+  const div = document.createElement('div');
+  div.style.cssText = 'display:flex;gap:8px;align-items:center;margin-bottom:8px';
+  div.id = 'faktor-row-'+faktoryCount;
+  div.innerHTML = '<select id="m-faktor-'+faktoryCount+'" style="flex:1;height:36px;padding:0 10px;border:1px solid var(--input-border);border-radius:8px;background:var(--input);color:var(--text);font-size:13px">'+
+    FAKTORY.map(f=>'<option>'+f+'</option>').join('')+'</select>'+
+    '<button class="btn btn-sm btn-danger" onclick="odoberFaktor('+faktoryCount+')">×</button>';
+  wrap.appendChild(div);
+};
+
+window.odoberFaktor = function(n){
+  const el = gi('faktor-row-'+n); if(el) el.remove();
+};
+
+function getFaktory(){
+  const res = [];
+  const f1 = gi('m-faktor-1'); if(f1) res.push(f1.value);
+  for(let i=2;i<=faktoryCount+10;i++){
+    const el = gi('m-faktor-'+i);
+    if(el && el.closest('#faktory-list')) res.push(el.value);
+  }
+  return [...new Set(res)];
+}
+
+function renderFaktoryModal(faktory){
+  faktoryCount = 1;
+  const wrap = gi('faktory-list');
+  const fArr = Array.isArray(faktory) ? faktory : [faktory||'PA'];
+  wrap.innerHTML = '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">'+
+    '<select id="m-faktor-1" style="flex:1;height:36px;padding:0 10px;border:1px solid var(--input-border);border-radius:8px;background:var(--input);color:var(--text);font-size:13px">'+
+    FAKTORY.map(f=>'<option'+(f===fArr[0]?' selected':'')+'>'+f+'</option>').join('')+'</select></div>';
+  for(let i=1;i<fArr.length;i++){
+    faktoryCount++;
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;gap:8px;align-items:center;margin-bottom:8px';
+    div.id = 'faktor-row-'+faktoryCount;
+    div.innerHTML = '<select id="m-faktor-'+faktoryCount+'" style="flex:1;height:36px;padding:0 10px;border:1px solid var(--input-border);border-radius:8px;background:var(--input);color:var(--text);font-size:13px">'+
+      FAKTORY.map(f=>'<option'+(f===fArr[i]?' selected':'')+'>'+f+'</option>').join('')+'</select>'+
+      '<button class="btn btn-sm btn-danger" onclick="odoberFaktor('+faktoryCount+')">×</button>';
+    wrap.appendChild(div);
+  }
+}
+
+// ── AUTH ──────────────────────────────────────────────────
 window.doLogin = async function(){
   const email=gv('login-email'), pw=gv('login-pass');
   const err=gi('login-err'), btn=gi('login-btn');
@@ -343,17 +459,19 @@ window.doLogin = async function(){
   try { await signInWithEmailAndPassword(auth,email,pw); }
   catch(e){ err.textContent='Nesprávny email alebo heslo.'; btn.disabled=false; btn.textContent='Prihlásiť sa'; }
 };
-window.odhlasit=()=>signOut(auth);
+window.odhlasit = () => signOut(auth);
 gi('login-pass').addEventListener('keydown',e=>{ if(e.key==='Enter') window.doLogin(); });
 
 onAuthStateChanged(auth, user=>{
   if(user){
-    currentUser=user;
-    isSef=(user.email===SEF_EMAIL);
+    currentUser = user;
+    const cfg = USERS[user.email] || {osoba: user.email.split('@')[0], isSef:false};
+    currentOsoba = cfg.osoba;
+    isSef = cfg.isSef;
     gi('login-screen').style.display='none';
     gi('app-screen').style.display='block';
-    gi('user-label').textContent=user.email+(isSef?' (správca)':'');
-    gi('btn-nova').style.display=isSef?'':'none';
+    gi('user-label').textContent = user.email + ' (' + currentOsoba + (isSef?' — správca':'')+')';
+    gi('btn-nova').style.display = isSef ? '' : 'none';
     nacitaj();
   } else {
     currentUser=null;
@@ -363,17 +481,18 @@ onAuthStateChanged(auth, user=>{
   }
 });
 
-// NAČÍTANIE
+// ── NAČÍTANIE ─────────────────────────────────────────────
 async function nacitaj(){
   try {
-    const snap=await getDocs(query(collection(db,'objednavky'),orderBy('created','desc')));
-    objednavky=[];
+    const snap = await getDocs(query(collection(db,'objednavky'),orderBy('created','desc')));
+    objednavky = [];
     snap.forEach(d=>{ objednavky.push({id:d.id,...d.data()}); });
     naplnRoky();
+    renderNotify();
     renderTabulka();
     renderKalendar();
     renderMoje();
-  } catch(e){ console.error(e); }
+  } catch(e){ console.error('Chyba nacitania:',e); }
 }
 
 function naplnRoky(){
@@ -387,8 +506,49 @@ function naplnRoky(){
   });
 }
 
-// NAVIGÁCIA
-window.showSec=function(name){
+// ── NOTIFIKÁCIE — nevidené objednávky ─────────────────────
+function renderNotify(){
+  if(!currentOsoba) return;
+  const nevidene = objednavky.filter(o=>{
+    if(o.osoba !== currentOsoba) return false;
+    const videli = o.videli || [];
+    return !videli.includes(currentOsoba);
+  });
+  const area = gi('notify-area');
+  if(!nevidene.length){ area.innerHTML=''; return; }
+  let h = '<div class="notify-banner">';
+  h += '<b>🔔 Nové objednávky ktoré si nevidel(a) ('+nevidene.length+'):</b><br>';
+  nevidene.forEach(o=>{
+    h += '<span style="margin-right:12px">• '+esc(o.evCislo||'bez čísla')+' — '+esc(o.objednavatel||'?')+
+      ' ['+esc(Array.isArray(o.faktory)?o.faktory.join(', '):(o.faktor||'?'))+']'+
+      (o.termin?' ('+formatDatum(o.termin)+')':' (bez dátumu)')+'</span>';
+  });
+  h += '<br><button class="btn btn-sm" style="margin-top:8px" onclick="potvrditVsetky()">✓ Potvrdiť všetky ako videné</button></div>';
+  area.innerHTML = h;
+}
+
+window.potvrditVsetky = async function(){
+  if(!currentOsoba) return;
+  const nevidene = objednavky.filter(o=>{
+    if(o.osoba !== currentOsoba) return false;
+    return !(o.videli||[]).includes(currentOsoba);
+  });
+  for(const o of nevidene){
+    const videli = [...(o.videli||[]), currentOsoba];
+    await updateDoc(doc(db,'objednavky',o.id),{videli});
+  }
+  await nacitaj();
+};
+
+window.potvrditJednu = async function(id){
+  const o = objednavky.find(x=>x.id===id); if(!o) return;
+  const videli = [...new Set([...(o.videli||[]), currentOsoba])];
+  await updateDoc(doc(db,'objednavky',id),{videli});
+  await nacitaj();
+};
+
+// ── NAVIGÁCIA ─────────────────────────────────────────────
+window.showSec = function(name){
   ['tabulka','kalendar','moje'].forEach(s=>{
     gi('sec-'+s).classList.remove('active');
     gi('tab-'+s).classList.remove('active');
@@ -399,12 +559,15 @@ window.showSec=function(name){
   if(name==='kalendar') renderKalendar();
 };
 
-// RENDER TABUĽKA
-window.renderTabulka=function(){
+// ── TABUĽKA ───────────────────────────────────────────────
+window.renderTabulka = function(){
   const fOs=gv('f-osoba'), fFak=gv('f-faktor'), fStav=gv('f-stav'), fRok=gv('f-rok'), fSearch=gv('f-search').toLowerCase();
   let data=[...objednavky];
   if(fOs) data=data.filter(o=>o.osoba===fOs);
-  if(fFak) data=data.filter(o=>o.faktor===fFak);
+  if(fFak) data=data.filter(o=>{
+    const fa=Array.isArray(o.faktory)?o.faktory:[o.faktor||''];
+    return fa.includes(fFak);
+  });
   if(fStav) data=data.filter(o=>o.stav===fStav);
   if(fRok) data=data.filter(o=>o.termin&&o.termin.startsWith(fRok));
   if(fSearch) data=data.filter(o=>[o.evCislo,o.objednavatel,o.kontakt,o.miesto,o.poznamka].join(' ').toLowerCase().includes(fSearch));
@@ -414,89 +577,159 @@ window.renderTabulka=function(){
   });
   let h='';
   data.forEach(o=>{
-    const noDate=!o.termin;
-    h+='<tr class="'+(noDate?'no-date':'')+'" onclick="otvorDetail(\''+o.id+'\')" style="cursor:pointer">';
-    h+='<td><b>'+esc(o.evCislo||'—')+'</b></td>';
+    const fa = Array.isArray(o.faktory)?o.faktory:[o.faktor||''];
+    const videli = o.videli||[];
+    const nevidena = o.osoba===currentOsoba && !videli.includes(currentOsoba);
+    const videliText = videli.length ? videli.join(', ') : '—';
+    h+='<tr class="'+(o.termin?'':'no-date')+(nevidena?' nova-nevidena':'')+'" onclick="otvorDetail(\''+o.id+'\')" style="cursor:pointer">';
+    h+='<td><b>'+esc(o.evCislo||'—')+'</b>'+(nevidena?'<span class="badge-nova"></span>':'')+'</td>';
     h+='<td>'+esc(o.objednavatel||'—')+'</td>';
     h+='<td>'+esc(o.kontakt||'—')+'</td>';
     h+='<td>'+esc(o.mobil||'—')+'</td>';
     h+='<td><span class="chip-os os-'+esc(o.osoba||'')+'">'+esc(o.osoba||'—')+'</span></td>';
-    h+='<td><span class="chip-faktor">'+esc(o.faktor||'—')+'</span></td>';
-    h+='<td>'+(o.termin?formatDatum(o.termin):'<span style="color:#aaa;font-style:italic">bez dátumu</span>')+'</td>';
-    h+='<td>'+esc(o.cas||'—')+'</td>';
-    h+='<td style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(o.miesto||'—')+'</td>';
-    h+='<td><span class="chip-stav stav-'+stavClass(o.stav)+'">'+esc(o.stav||'—')+'</span></td>';
-    h+='<td style="max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#666">'+esc(o.poznamka||'')+'</td>';
-    h+='<td onclick="event.stopPropagation()">';
-    if(isSef) h+='<button class="btn btn-sm" onclick="editObjednavku(\''+o.id+'\')">✏️</button> ';
-    if(isSef) h+='<button class="btn btn-sm btn-danger" onclick="vymazObjednavku(\''+o.id+'\')">×</button>';
-    else h+='<button class="btn btn-sm" onclick="editStav(\''+o.id+'\')">Stav</button>';
-    h+='</td></tr>';
-  });
-  gi('tbl-body').innerHTML=h||'<tr><td colspan="12" style="text-align:center;padding:2rem;color:#888">Žiadne záznamy</td></tr>';
-  gi('tbl-info').textContent='Zobrazených: '+data.length+' / '+objednavky.length;
-};
-
-window.sortBy=function(kol){ if(sortKol===kol) sortAsc=!sortAsc; else {sortKol=kol;sortAsc=true;} renderTabulka(); };
-window.resetFiltre=function(){ ['f-osoba','f-faktor','f-stav','f-rok'].forEach(id=>{const e=gi(id);if(e)e.value='';}); gi('f-search').value=''; renderTabulka(); };
-
-// RENDER MOJE
-window.renderMoje=function(){
-  if(!currentUser) return;
-  const mOsoba = osobaZEmailu(currentUser.email);
-  gi('moje-info').textContent='Zobrazujú sa merania pre: '+mOsoba;
-  const fStav=gv('mf-stav'), fRok=gv('mf-rok');
-  let data=objednavky.filter(o=>o.osoba===mOsoba);
-  if(fStav) data=data.filter(o=>o.stav===fStav);
-  if(fRok) data=data.filter(o=>o.termin&&o.termin.startsWith(fRok));
-  data.sort((a,b)=>(a.termin||'')>(b.termin||'')?1:-1);
-  let h='';
-  data.forEach(o=>{
-    h+='<tr onclick="otvorDetail(\''+o.id+'\')" style="cursor:pointer">';
-    h+='<td><b>'+esc(o.evCislo||'—')+'</b></td>';
-    h+='<td>'+esc(o.objednavatel||'—')+'</td>';
-    h+='<td><span class="chip-faktor">'+esc(o.faktor||'—')+'</span></td>';
-    h+='<td>'+(o.termin?formatDatum(o.termin):'<span style="color:#aaa;font-style:italic">bez dátumu</span>')+'</td>';
+    h+='<td>'+fa.map(f=>'<span class="chip-faktor">'+esc(f)+'</span>').join(' ')+'</td>';
+    h+='<td>'+(o.termin?formatDatum(o.termin):'<span style="color:var(--text4);font-style:italic">bez dátumu</span>')+'</td>';
     h+='<td>'+esc(o.cas||'—')+'</td>';
     h+='<td style="max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(o.miesto||'—')+'</td>';
     h+='<td><span class="chip-stav stav-'+stavClass(o.stav)+'">'+esc(o.stav||'—')+'</span></td>';
-    h+='<td style="max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#666">'+esc(o.poznamka||'')+'</td>';
-    h+='<td onclick="event.stopPropagation()"><button class="btn btn-sm" onclick="editStav(\''+o.id+'\')">Stav</button></td>';
-    h+='</tr>';
+    h+='<td style="max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text2)">'+esc(o.poznamka||'')+'</td>';
+    h+='<td style="font-size:11px;color:var(--text3)">'+esc(videliText)+'</td>';
+    h+='<td onclick="event.stopPropagation()" style="white-space:nowrap">';
+    if(isSef){
+      h+='<button class="btn btn-sm" onclick="editObjednavku(\''+o.id+'\')">✏️</button> ';
+      h+='<button class="btn btn-sm btn-danger" onclick="vymazObjednavku(\''+o.id+'\')">×</button>';
+    } else {
+      h+='<button class="btn btn-sm" onclick="otvorZmenaStavu(\''+o.id+'\')">Stav</button>';
+      if(nevidena) h+=' <button class="btn btn-sm" onclick="potvrditJednu(\''+o.id+'\')">✓</button>';
+    }
+    h+='</td></tr>';
   });
-  gi('moje-body').innerHTML=h||'<tr><td colspan="9" style="text-align:center;padding:2rem;color:#888">Žiadne merania</td></tr>';
-  gi('moje-info2').textContent='Celkom: '+data.length;
+  gi('tbl-body').innerHTML = h||'<tr><td colspan="13" style="text-align:center;padding:2rem;color:var(--text3)">Žiadne záznamy</td></tr>';
+  gi('tbl-info').textContent = 'Zobrazených: '+data.length+' / '+objednavky.length;
 };
 
-// KALENDÁR
-window.zmenMesiac=function(d){ kalMesiac+=d; if(kalMesiac>11){kalMesiac=0;kalRok++;} if(kalMesiac<0){kalMesiac=11;kalRok--;} renderKalendar(); };
-window.dnesKal=function(){ kalRok=new Date().getFullYear(); kalMesiac=new Date().getMonth(); renderKalendar(); };
+window.sortBy = function(k){ if(sortKol===k) sortAsc=!sortAsc; else {sortKol=k;sortAsc=true;} renderTabulka(); };
+window.resetFiltre = function(){
+  ['f-osoba','f-faktor','f-stav','f-rok'].forEach(id=>{const e=gi(id);if(e)e.value='';});
+  gi('f-search').value=''; renderTabulka();
+};
 
-window.renderKalendar=function(){
-  const fOs=gv('kal-filter-osoba');
+// ── EXPORT CSV ────────────────────────────────────────────
+window.exportCSV = function(){
+  const fOs=gv('f-osoba'), fFak=gv('f-faktor'), fStav=gv('f-stav'), fRok=gv('f-rok'), fSearch=gv('f-search').toLowerCase();
+  let data=[...objednavky];
+  if(fOs) data=data.filter(o=>o.osoba===fOs);
+  if(fFak) data=data.filter(o=>{const fa=Array.isArray(o.faktory)?o.faktory:[o.faktor||'']; return fa.includes(fFak);});
+  if(fStav) data=data.filter(o=>o.stav===fStav);
+  if(fRok) data=data.filter(o=>o.termin&&o.termin.startsWith(fRok));
+  if(fSearch) data=data.filter(o=>[o.evCislo,o.objednavatel,o.kontakt,o.miesto,o.poznamka].join(' ').toLowerCase().includes(fSearch));
+  const hlavicka = ['Ev.číslo','Objednávateľ','Kontakt','Mobil','Email','Zodpovedný','Faktor','Termín','Čas','Miesto','Stav','Poznámka'];
+  const riadky = data.map(o=>{
+    const fa = Array.isArray(o.faktory)?o.faktory.join('+'): (o.faktor||'');
+    return [o.evCislo,o.objednavatel,o.kontakt,o.mobil,o.mail,o.osoba,fa,o.termin?formatDatum(o.termin):'',o.cas,o.miesto,o.stav,o.poznamka].map(v=>'"'+(v||'').replace(/"/g,'""')+'"').join(';');
+  });
+  const csv = '\uFEFF'+hlavicka.join(';')+'\n'+riadky.join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download = 'objednavky_export.csv'; a.click();
+};
+
+// ── MOJE MERANIA ──────────────────────────────────────────
+window.renderMoje = function(){
+  if(!currentOsoba) return;
+  gi('moje-info-box').textContent = 'Zobrazujú sa merania pre: '+currentOsoba;
+  const fStav=gv('mf-stav'), fRok=gv('mf-rok');
+  let data=objednavky.filter(o=>o.osoba===currentOsoba);
+  if(fStav) data=data.filter(o=>o.stav===fStav);
+  if(fRok) data=data.filter(o=>o.termin&&o.termin.startsWith(fRok));
+  data.sort((a,b)=>(a.termin||'zzz')>(b.termin||'zzz')?1:-1);
+  const osobnePozn = JSON.parse(localStorage.getItem('osobne_pozn')||'{}');
+  let h='';
+  data.forEach(o=>{
+    const fa = Array.isArray(o.faktory)?o.faktory:[o.faktor||''];
+    const pozn = osobnePozn[o.id]||'';
+    h+='<tr onclick="otvorDetail(\''+o.id+'\')" style="cursor:pointer">';
+    h+='<td><b>'+esc(o.evCislo||'—')+'</b></td>';
+    h+='<td>'+esc(o.objednavatel||'—')+'</td>';
+    h+='<td>'+fa.map(f=>'<span class="chip-faktor">'+esc(f)+'</span>').join(' ')+'</td>';
+    h+='<td>'+(o.termin?formatDatum(o.termin):'<span style="color:var(--text4);font-style:italic">bez dátumu</span>')+'</td>';
+    h+='<td>'+esc(o.cas||'—')+'</td>';
+    h+='<td style="max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(o.miesto||'—')+'</td>';
+    h+='<td><span class="chip-stav stav-'+stavClass(o.stav)+'">'+esc(o.stav||'—')+'</span></td>';
+    h+='<td style="max-width:160px;color:var(--text2);font-style:'+(pozn?'normal':'italic')+';font-size:11px">'+esc(pozn||'—')+'</td>';
+    h+='<td onclick="event.stopPropagation()" style="white-space:nowrap">';
+    h+='<button class="btn btn-sm" onclick="otvorZmenaStavu(\''+o.id+'\')">Stav</button> ';
+    h+='<button class="btn btn-sm" onclick="otvorPoznamku(\''+o.id+'\')">📝</button>';
+    h+='</td></tr>';
+  });
+  gi('moje-body').innerHTML = h||'<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--text3)">Žiadne merania</td></tr>';
+  gi('moje-info2').textContent = 'Celkom: '+data.length;
+};
+
+// ── OSOBNÁ POZNÁMKA ───────────────────────────────────────
+window.otvorPoznamku = function(id){
+  poznEditId = id;
+  const o = objednavky.find(x=>x.id===id); if(!o) return;
+  const osobnePozn = JSON.parse(localStorage.getItem('osobne_pozn')||'{}');
+  gi('pozn-modal-info').textContent = (o.evCislo||'?')+' — '+(o.objednavatel||'?');
+  gi('pozn-input').value = osobnePozn[id]||'';
+  gi('modal-pozn').style.display='flex';
+};
+
+window.ulozitPoznamku = function(){
+  if(!poznEditId) return;
+  const osobnePozn = JSON.parse(localStorage.getItem('osobne_pozn')||'{}');
+  osobnePozn[poznEditId] = gv('pozn-input');
+  localStorage.setItem('osobne_pozn',JSON.stringify(osobnePozn));
+  gi('modal-pozn').style.display='none';
+  renderMoje();
+};
+
+// ── ZMENA STAVU ───────────────────────────────────────────
+window.otvorZmenaStavu = function(id){
+  const o = objednavky.find(x=>x.id===id); if(!o) return;
+  stavEditId = id;
+  gi('stav-modal-info').textContent = (o.evCislo||'bez čísla')+' — '+(o.objednavatel||'?');
+  gi('stav-select').value = o.stav||'objednané';
+  gi('modal-stav').style.display='flex';
+};
+
+window.ulozitStav = async function(){
+  if(!stavEditId) return;
+  const novy = gv('stav-select');
+  try {
+    await updateDoc(doc(db,'objednavky',stavEditId),{stav:novy, updated:Date.now()});
+    gi('modal-stav').style.display='none';
+    await nacitaj();
+  } catch(e){ alert('Chyba: '+e.message); }
+};
+
+// ── KALENDÁR ──────────────────────────────────────────────
+window.zmenMesiac = function(d){ kalMesiac+=d; if(kalMesiac>11){kalMesiac=0;kalRok++;} if(kalMesiac<0){kalMesiac=11;kalRok--;} renderKalendar(); };
+window.dnesKal = function(){ kalRok=new Date().getFullYear(); kalMesiac=new Date().getMonth(); renderKalendar(); };
+
+window.renderKalendar = function(){
+  const fOs=gv('kal-f-osoba');
   const mesNazvy=['Január','Február','Marec','Apríl','Máj','Jún','Júl','August','September','Október','November','December'];
   gi('kal-nadpis').textContent=mesNazvy[kalMesiac]+' '+kalRok;
-  const dniNazvy=['Po','Ut','St','Št','Pi','So','Ne'];
-  gi('kal-nazvy-dni').innerHTML=dniNazvy.map(d=>'<div class="kal-day-name">'+d+'</div>').join('');
+  gi('kal-nazvy').innerHTML=['Po','Ut','St','Št','Pi','So','Ne'].map(d=>'<div class="kal-day-name">'+d+'</div>').join('');
   const prvy=new Date(kalRok,kalMesiac,1);
   const posledny=new Date(kalRok,kalMesiac+1,0);
-  let zacat=prvy.getDay()-1; if(zacat<0)zacat=6;
-  const dnes=new Date(); const dnesStr=dnes.toISOString().slice(0,10);
+  let zacat=prvy.getDay()-1; if(zacat<0) zacat=6;
+  const dnesStr=new Date().toISOString().slice(0,10);
   let h='';
   for(let i=0;i<zacat;i++){
     const d=new Date(kalRok,kalMesiac,-(zacat-i-1));
     h+='<div class="kal-cell iny-mesiac"><div class="kal-date">'+d.getDate()+'</div></div>';
   }
   for(let d=1;d<=posledny.getDate();d++){
-    const dateStr=kalRok+'-'+String(kalMesiac+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-    const isDnes=dateStr===dnesStr;
-    let eventy=objednavky.filter(o=>o.termin===dateStr);
-    if(fOs) eventy=eventy.filter(o=>o.osoba===fOs);
-    h+='<div class="kal-cell'+(isDnes?' dnes':'')+'"><div class="kal-date">'+(isDnes?'<b>'+d+'</b>':d)+'</div>';
-    eventy.forEach(o=>{
-      h+='<div class="kal-event chip-os os-'+esc(o.osoba||'')+'" onclick="otvorDetail(\''+o.id+'\')" title="'+esc(o.objednavatel||'')+' — '+esc(o.faktor||'')+'">';
-      h+=esc(o.osoba||'?')+': '+esc(o.faktor||'')+' '+esc(o.evCislo||'');
-      h+='</div>';
+    const ds=kalRok+'-'+String(kalMesiac+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    let ev=objednavky.filter(o=>o.termin===ds);
+    if(fOs) ev=ev.filter(o=>o.osoba===fOs);
+    h+='<div class="kal-cell'+(ds===dnesStr?' dnes':'')+'"><div class="kal-date">'+(ds===dnesStr?'<b>'+d+'</b>':d)+'</div>';
+    ev.forEach(o=>{
+      const fa=Array.isArray(o.faktory)?o.faktory.join('+'):(o.faktor||'');
+      h+='<div class="kal-event chip-os os-'+esc(o.osoba||'')+'" onclick="otvorDetail(\''+o.id+'\')" title="'+esc(o.objednavatel||'')+' — '+esc(fa)+'">'+esc(o.osoba||'?')+': '+esc(fa)+'</div>';
     });
     h+='</div>';
   }
@@ -505,105 +738,123 @@ window.renderKalendar=function(){
   gi('kal-grid').innerHTML=h;
 };
 
-// MODAL — nová objednávka
-window.otvorModal=function(){
-  editId=null; gi('modal-title').textContent='Nová objednávka';
-  ['m-evcislo','m-obj','m-kontakt','m-mobil','m-mail','m-termin','m-cas','m-miesto','m-poznamka'].forEach(id=>{const e=gi(id);if(e)e.value='';});
+// ── MODAL OBJEDNÁVKA ──────────────────────────────────────
+window.otvorModal = function(){
+  editId=null;
+  gi('modal-title').textContent='Nová objednávka';
+  ['m-obj','m-kontakt','m-mobil','m-mail','m-termin','m-miesto','m-poznamka'].forEach(id=>{const e=gi(id);if(e)e.value='';});
   gi('m-stav').value='objednané';
+  gi('m-cas').value='08:00';
   gi('koliz-warn').style.display='none';
+  renderFaktoryModal(['PA']);
+  naplnCasy();
+  gi('m-cas').value='08:00';
   gi('modal').style.display='flex';
 };
 
-window.zatvorModal=function(){ gi('modal').style.display='none'; };
+window.zatvorModal = function(){ gi('modal').style.display='none'; };
 
-window.editObjednavku=function(id){
+window.editObjednavku = function(id){
   const o=objednavky.find(x=>x.id===id); if(!o) return;
-  editId=id; gi('modal-title').textContent='Upraviť objednávku';
-  sv('m-evcislo',o.evCislo||''); sv('m-obj',o.objednavatel||''); sv('m-kontakt',o.kontakt||'');
-  sv('m-mobil',o.mobil||''); sv('m-mail',o.mail||''); sv('m-termin',o.termin||'');
-  sv('m-cas',o.cas||''); sv('m-miesto',o.miesto||''); sv('m-poznamka',o.poznamka||'');
-  sv('m-osoba',o.osoba||'Lenka'); sv('m-faktor',o.faktor||'PA'); sv('m-stav',o.stav||'objednané');
+  editId=id;
+  gi('modal-title').textContent='Upraviť objednávku';
+  sv('m-obj',o.objednavatel||''); sv('m-kontakt',o.kontakt||'');
+  sv('m-mobil',o.mobil||''); sv('m-mail',o.mail||'');
+  sv('m-termin',o.termin||''); sv('m-miesto',o.miesto||'');
+  sv('m-poznamka',o.poznamka||'');
+  sv('m-osoba',o.osoba||'Lenka'); sv('m-stav',o.stav||'objednané');
+  naplnCasy(); sv('m-cas',o.cas||'08:00');
+  const fa=Array.isArray(o.faktory)?o.faktory:[o.faktor||'PA'];
+  renderFaktoryModal(fa);
   gi('koliz-warn').style.display='none';
   gi('modal').style.display='flex';
 };
 
-window.checkKolizia=function(){
-  const termin=gv('m-termin'); if(!termin) return;
-  const osoba=gv('m-osoba');
-  const koliz=objednavky.filter(o=>o.termin===termin&&o.osoba===osoba&&o.id!==editId);
+window.checkKolizia = function(){
+  const termin=gv('m-termin'); if(!termin){ gi('koliz-warn').style.display='none'; return; }
+  const koliz=objednavky.filter(o=>o.termin===termin&&o.id!==editId);
   const warn=gi('koliz-warn');
   if(koliz.length){
     warn.style.display='block';
-    warn.innerHTML='⚠️ <b>Kolízia!</b> '+osoba+' má v tento deň už '+koliz.length+' meranie(í): '+koliz.map(o=>esc(o.evCislo||o.objednavatel||'?')).join(', ');
+    const zoznam=koliz.map(o=>'<b>'+esc(o.osoba||'?')+'</b>: '+esc(o.evCislo||o.objednavatel||'?')).join(', ');
+    warn.innerHTML='⚠️ V tento deň je už naplánované meranie: '+zoznam;
   } else { warn.style.display='none'; }
 };
 
-window.ulozitObjednavku=async function(){
-  const btn=gi('modal-save-btn'); btn.disabled=true; btn.innerHTML='<span class="spinner"></span>';
+window.ulozitObjednavku = async function(){
+  const btn=gi('modal-save-btn');
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span>';
+  const faktory=getFaktory();
   const data={
-    evCislo:gv('m-evcislo'), objednavatel:gv('m-obj'), kontakt:gv('m-kontakt'),
-    mobil:gv('m-mobil'), mail:gv('m-mail'), osoba:gv('m-osoba'), faktor:gv('m-faktor'),
+    objednavatel:gv('m-obj'), kontakt:gv('m-kontakt'), mobil:gv('m-mobil'),
+    mail:gv('m-mail'), osoba:gv('m-osoba'), faktory:faktory, faktor:faktory[0]||'',
     termin:gv('m-termin')||null, cas:gv('m-cas'), miesto:gv('m-miesto'),
     stav:gv('m-stav'), poznamka:gv('m-poznamka')
   };
+  // Evidenčné číslo zadáva zamestnanec — pri novej objednávke necháme prázdne
+  if(!editId) data.evCislo = '';
   try {
-    if(editId){ await setDoc(doc(db,'objednavky',editId),{...data,updated:Date.now()}); }
-    else { await addDoc(collection(db,'objednavky'),{...data,created:Date.now(),updated:Date.now()}); }
-    zatvorModal(); await nacitaj();
-  } catch(e){ alert('Chyba: '+e.message); }
+    if(editId){
+      // OPRAVA: použiť updateDoc nie setDoc aby sa nezmazali ostatné polia
+      await updateDoc(doc(db,'objednavky',editId), {...data, updated:Date.now()});
+    } else {
+      data.videli = [];
+      data.created = Date.now();
+      data.updated = Date.now();
+      await addDoc(collection(db,'objednavky'), data);
+    }
+    zatvorModal();
+    await nacitaj();
+  } catch(e){ alert('Chyba uloženia: '+e.message); }
   btn.disabled=false; btn.textContent='Uložiť';
 };
 
-window.vymazObjednavku=async function(id){
-  if(!confirm('Naozaj vymazať túto objednávku?')) return;
+window.vymazObjednavku = async function(id){
+  if(!confirm('Naozaj vymazať?')) return;
   await deleteDoc(doc(db,'objednavky',id));
   await nacitaj();
 };
 
-// DETAIL
-window.otvorDetail=function(id){
+// ── DETAIL ────────────────────────────────────────────────
+window.otvorDetail = function(id){
   const o=objednavky.find(x=>x.id===id); if(!o) return;
+  const fa=Array.isArray(o.faktory)?o.faktory:[o.faktor||''];
   gi('det-title').textContent=(o.evCislo||'Objednávka')+' — '+esc(o.objednavatel||'');
-  let h='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">';
-  [['Ev. číslo',o.evCislo],['Stav','<span class="chip-stav stav-'+stavClass(o.stav)+'">'+esc(o.stav||'—')+'</span>'],
-   ['Objednávateľ',o.objednavatel],['Kontaktná osoba',o.kontakt],
-   ['Mobil',o.mobil],['Email',o.mail],
-   ['Zodpovedný','<span class="chip-os os-'+esc(o.osoba||'')+'">'+esc(o.osoba||'—')+'</span>'],
-   ['Meraný faktor','<span class="chip-faktor">'+esc(o.faktor||'—')+'</span>'],
-   ['Termín',o.termin?formatDatum(o.termin):'<span style="color:#aaa">bez dátumu</span>'],['Čas',o.cas||'—'],
-   ['Miesto',o.miesto],['Poznámka',o.poznamka]
-  ].forEach(([k,v])=>{
-    h+='<div style="padding:6px 0;border-bottom:1px solid #f0f0f0"><div style="font-size:11px;color:#888">'+k+'</div><div>'+((v!==null&&v!==undefined&&v!=='')?v:'—')+'</div></div>';
+  const osobnePozn=JSON.parse(localStorage.getItem('osobne_pozn')||'{}');
+  const pols=[
+    ['Ev. číslo',esc(o.evCislo||'—')],
+    ['Stav','<span class="chip-stav stav-'+stavClass(o.stav)+'">'+esc(o.stav||'—')+'</span>'],
+    ['Objednávateľ',esc(o.objednavatel||'—')],['Kontaktná osoba',esc(o.kontakt||'—')],
+    ['Mobil',esc(o.mobil||'—')],['Email',esc(o.mail||'—')],
+    ['Zodpovedný','<span class="chip-os os-'+esc(o.osoba||'')+'">'+esc(o.osoba||'—')+'</span>'],
+    ['Faktor',fa.map(f=>'<span class="chip-faktor">'+esc(f)+'</span>').join(' ')],
+    ['Termín',o.termin?formatDatum(o.termin):'<span style="color:var(--text4)">bez dátumu</span>'],
+    ['Čas',esc(o.cas||'—')],['Miesto',esc(o.miesto||'—')],
+    ['Poznámka',esc(o.poznamka||'—')],
+    ['Moja poznámka',esc(osobnePozn[id]||'—')],
+    ['Videli',(o.videli||[]).join(', ')||'—']
+  ];
+  let h='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px">';
+  pols.forEach(([k,v])=>{
+    h+='<div style="padding:6px 0;border-bottom:1px solid var(--border3)"><div style="font-size:11px;color:var(--text3)">'+k+'</div><div style="color:var(--text)">'+v+'</div></div>';
   });
   h+='</div>';
   gi('det-content').innerHTML=h;
   let acts='<button class="btn" onclick="zatvorDetail()">Zavrieť</button>';
   if(isSef) acts+=' <button class="btn btn-primary" onclick="zatvorDetail();editObjednavku(\''+id+'\')">✏️ Upraviť</button>';
-  else acts+=' <button class="btn btn-primary" onclick="zatvorDetail();editStav(\''+id+'\')">Zmeniť stav</button>';
+  else {
+    acts+=' <button class="btn btn-primary" onclick="zatvorDetail();otvorZmenaStavu(\''+id+'\')">Zmeniť stav</button>';
+    const videl=(o.videli||[]).includes(currentOsoba);
+    if(!videl&&o.osoba===currentOsoba) acts+=' <button class="btn" onclick="zatvorDetail();potvrditJednu(\''+id+'\')">✓ Videl(a) som</button>';
+  }
   gi('det-actions').innerHTML=acts;
   gi('modal-detail').style.display='flex';
 };
-window.zatvorDetail=function(){ gi('modal-detail').style.display='none'; };
+window.zatvorDetail = function(){ gi('modal-detail').style.display='none'; };
 
-// EDIT STAV (pre bežných používateľov)
-window.editStav=function(id){
-  const o=objednavky.find(x=>x.id===id); if(!o) return;
-  const novy=prompt('Zmeniť stav pre '+esc(o.evCislo||o.objednavatel||'?')+':\n\nobjednané / odmerané / domerať / zrušené / preložené\n\nAktuálny stav: '+(o.stav||'—'));
-  if(!novy) return;
-  const stavyOk=['objednané','odmerané','domerať','zrušené','preložené'];
-  if(!stavyOk.includes(novy.trim())){ alert('Neplatný stav. Zadaj jeden z: '+stavyOk.join(', ')); return; }
-  setDoc(doc(db,'objednavky',id),{...o,stav:novy.trim(),updated:Date.now()},{merge:true}).then(()=>nacitaj());
-};
-
-// HELPERS
-function stavClass(s){ const m={'objednané':'objednane','odmerané':'odmerane','domerať':'domerat','zrušené':'zrusene','preložené':'prelozene'}; return m[s]||'objednane'; }
-function formatDatum(d){ if(!d) return '—'; const p=d.split('-'); return p[2]+'.'+p[1]+'.'+p[0]; }
-function osobaZEmailu(email){
-  const m={'lenka':['Lenka'],'katka':['Katka'],'emilia':['Emilia'],'emília':['Emilia'],'veducky':['Veducky'],'andrej':['Andrej']};
-  const el=email.toLowerCase();
-  for(const k in m){ if(el.includes(k)) return m[k][0]; }
-  return email.split('@')[0];
-}
+// ── HELPERS ───────────────────────────────────────────────
+function stavClass(s){ return {'objednané':'objednane','odmerané':'odmerane','domerať':'domerat','zrušené':'zrusene','preložené':'prelozene'}[s]||'objednane'; }
+function formatDatum(d){ if(!d)return '—'; const p=d.split('-'); return p[2]+'.'+p[1]+'.'+p[0]; }
 function gi(id){ return document.getElementById(id); }
 function gv(id){ const e=gi(id); return e?e.value:''; }
 function sv(id,v){ const e=gi(id); if(e) e.value=v; }
