@@ -342,7 +342,7 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, setDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const fbApp = initializeApp({
   apiKey:"AIzaSyBF-T03wUuFidKhrECdY7eurYx1H3fYd_w",
@@ -358,10 +358,11 @@ const db = getFirestore(fbApp);
 // ── KONFIGURÁCIA POUŽÍVATEĽOV ──────────────────────────────
 // Uprav emaily podľa skutočných emailov tímu
 const USERS = {
-  'emilia.sokolova11@gmail.com':     {osoba:'Veducky', isSef:true},
+  'sef@brenner.sk':     {osoba:'Lenka', isSef:true},
   'lenka@brenner.sk':   {osoba:'Lenka', isSef:false},
   'katka@brenner.sk':   {osoba:'Katka', isSef:false},
-  'emilia.sokolova1@gmail.com':  {osoba:'Emilia', isSef:false},
+  'emilia@brenner.sk':  {osoba:'Emilia', isSef:false},
+  'veducky@brenner.sk': {osoba:'Veducky', isSef:false},
   'andrej@brenner.sk':  {osoba:'Andrej', isSef:false},
 };
 
@@ -377,6 +378,7 @@ let kalMesiac = new Date().getMonth();
 let sortKol = 'termin';
 let sortAsc = true;
 let faktoryCount = 1;
+let osobnePozn = {}; // načítané z Firebase po prihlásení
 
 // ── DARK MODE ──────────────────────────────────────────────
 window.toggleDark = function(){
@@ -486,12 +488,25 @@ async function nacitaj(){
     const snap = await getDocs(query(collection(db,'objednavky'),orderBy('created','desc')));
     objednavky = [];
     snap.forEach(d=>{ objednavky.push({id:d.id,...d.data()}); });
+    await nacitajPoznamky();
     naplnRoky();
     renderNotify();
     renderTabulka();
     renderKalendar();
     renderMoje();
   } catch(e){ console.error('Chyba nacitania:',e); }
+}
+
+async function nacitajPoznamky(){
+  if(!currentUser) return;
+  try {
+    const snap = await getDocs(collection(db,'osobne_poznamky'));
+    snap.forEach(d=>{
+      if(d.id === currentUser.uid){
+        osobnePozn = d.data().poznamky || {};
+      }
+    });
+  } catch(e){ console.error('Chyba nacitania poznamok:',e); }
 }
 
 function naplnRoky(){
@@ -642,7 +657,7 @@ window.renderMoje = function(){
   if(fStav) data=data.filter(o=>o.stav===fStav);
   if(fRok) data=data.filter(o=>o.termin&&o.termin.startsWith(fRok));
   data.sort((a,b)=>(a.termin||'zzz')>(b.termin||'zzz')?1:-1);
-  const osobnePozn = JSON.parse(localStorage.getItem('osobne_pozn')||'{}');
+  // osobnePozn je globalna premenna nacitana z Firebase
   let h='';
   data.forEach(o=>{
     const fa = Array.isArray(o.faktory)?o.faktory:[o.faktor||''];
@@ -669,17 +684,20 @@ window.renderMoje = function(){
 window.otvorPoznamku = function(id){
   poznEditId = id;
   const o = objednavky.find(x=>x.id===id); if(!o) return;
-  const osobnePozn = JSON.parse(localStorage.getItem('osobne_pozn')||'{}');
   gi('pozn-modal-info').textContent = (o.evCislo||'?')+' — '+(o.objednavatel||'?');
   gi('pozn-input').value = osobnePozn[id]||'';
   gi('modal-pozn').style.display='flex';
 };
 
-window.ulozitPoznamku = function(){
-  if(!poznEditId) return;
-  const osobnePozn = JSON.parse(localStorage.getItem('osobne_pozn')||'{}');
+window.ulozitPoznamku = async function(){
+  if(!poznEditId||!currentUser) return;
+  const btn = gi('modal-pozn').querySelector('.btn-primary');
+  if(btn){ btn.disabled=true; btn.innerHTML='<span class="spinner"></span>'; }
   osobnePozn[poznEditId] = gv('pozn-input');
-  localStorage.setItem('osobne_pozn',JSON.stringify(osobnePozn));
+  try {
+    await setDoc(doc(db,'osobne_poznamky',currentUser.uid), {poznamky: osobnePozn, updated: Date.now()});
+  } catch(e){ console.error('Chyba ulozenia poznamky:',e); }
+  if(btn){ btn.disabled=false; btn.textContent='Uložiť'; }
   gi('modal-pozn').style.display='none';
   renderMoje();
 };
@@ -819,7 +837,7 @@ window.otvorDetail = function(id){
   const o=objednavky.find(x=>x.id===id); if(!o) return;
   const fa=Array.isArray(o.faktory)?o.faktory:[o.faktor||''];
   gi('det-title').textContent=(o.evCislo||'Objednávka')+' — '+esc(o.objednavatel||'');
-  const osobnePozn=JSON.parse(localStorage.getItem('osobne_pozn')||'{}');
+  // osobnePozn je globalna premenna
   const pols=[
     ['Ev. číslo',esc(o.evCislo||'—')],
     ['Stav','<span class="chip-stav stav-'+stavClass(o.stav)+'">'+esc(o.stav||'—')+'</span>'],
