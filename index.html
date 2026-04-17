@@ -240,7 +240,7 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
       <div class="field"><label>Stav</label>
         <select id="m-stav"><option>objednané</option><option>odmerané</option><option>domerať</option><option>čaká sa na podklady</option><option>vypracované - neschválené</option><option>vypracované - schválené</option><option>čaká sa na platbu</option><option>odovzdané</option></select>
       </div>
-      <div class="field" id="evcislo-field" style="display:none"><label>Evidenčné číslo</label><input id="m-evcislo" placeholder="napr. PA-46/2025"></div>
+      <div class="field"><label>Evidenčné číslo</label><input id="m-evcislo" placeholder="napr. PA-46/2025"></div>
     </div>
     <div class="grid2" style="gap:12px;margin-bottom:12px">
       <div class="field"><label>Objednávateľ / firma</label><input id="m-obj" placeholder="Názov firmy"></div>
@@ -686,7 +686,6 @@ window.renderKalendar=function(){
 window.otvorModal=function(prefill){
   editId=null;
   gi('modal-title').textContent='Nová objednávka';
-  gi('evcislo-field').style.display='none';
   gi('btn-ulozit-faktor').style.display=isSef?'':'none';
   ['m-obj','m-kontakt','m-mobil','m-mail','m-termin','m-miesto','m-poznamka','m-evcislo'].forEach(id=>{const e=gi(id);if(e)e.value='';});
   gi('m-stav').value='objednané'; gi('m-osoba').value='Lenka'; gi('m-faktor').value='PA';
@@ -702,20 +701,33 @@ window.otvorModal=function(prefill){
   }
   gi('modal').style.display='flex';
 };
-window.zatvorModal=function(){ gi('modal').style.display='none'; };
+window.zatvorModal=function(){
+  gi('modal').style.display='none';
+  // Odomkni polia pre ďalšie otvorenie
+  ['m-obj','m-kontakt','m-mobil','m-mail','m-termin','m-miesto','m-osoba','m-faktor','m-cas'].forEach(fid=>{
+    const el=gi(fid); if(!el) return;
+    el.disabled=false; el.style.opacity='1';
+  });
+};
 
 window.editObjednavku=function(id){
   const o=[...objednavky,...historia].find(x=>x.id===id); if(!o) return;
   editId=id;
   gi('modal-title').textContent='Upraviť objednávku';
-  gi('evcislo-field').style.display=''; // vždy viditeľné pri editácii
-  gi('btn-ulozit-faktor').style.display='none'; // pri editácii nie
+  gi('btn-ulozit-faktor').style.display='none';
   sv('m-evcislo',o.evCislo||''); sv('m-obj',o.objednavatel||''); sv('m-kontakt',o.kontakt||'');
   sv('m-mobil',o.mobil||''); sv('m-mail',o.mail||''); sv('m-termin',o.termin||'');
   sv('m-miesto',o.miesto||''); sv('m-poznamka',o.poznamka||'');
   sv('m-osoba',o.osoba||'Lenka'); sv('m-faktor',o.faktor||'PA'); sv('m-stav',o.stav||'objednané');
   naplnCasy(); sv('m-cas',o.cas||'08:00');
   gi('koliz-warn').style.display='none';
+  // Pre zamestnancov — zamkni polia ktoré nemôžu meniť
+  const zamocovat=['m-obj','m-kontakt','m-mobil','m-mail','m-termin','m-miesto','m-osoba','m-faktor','m-cas'];
+  zamocovat.forEach(fid=>{
+    const el=gi(fid); if(!el) return;
+    el.disabled=!isSef;
+    el.style.opacity=isSef?'1':'0.5';
+  });
   gi('modal').style.display='flex';
 };
 
@@ -759,13 +771,22 @@ window.ulozitADalsieFaktor=async function(){
 window.ulozitObjednavku=async function(){
   const btn=gi('modal-save-btn');
   btn.disabled=true; btn.innerHTML='<span class="spinner"></span>';
-  const data={
-    objednavatel:gv('m-obj'), kontakt:gv('m-kontakt'), mobil:gv('m-mobil'),
-    mail:gv('m-mail'), osoba:gv('m-osoba'), faktor:gv('m-faktor'),
-    termin:gv('m-termin')||null, cas:gv('m-cas'), miesto:gv('m-miesto'),
-    stav:gv('m-stav'), poznamka:gv('m-poznamka'),
-    updated:Date.now(), lastEditBy:currentOsoba, editNotifPotv:[]
-  };
+  // Zamestnanec môže meniť len stav, ev. číslo a poznámku
+  let data;
+  if(isSef){
+    data={
+      objednavatel:gv('m-obj'), kontakt:gv('m-kontakt'), mobil:gv('m-mobil'),
+      mail:gv('m-mail'), osoba:gv('m-osoba'), faktor:gv('m-faktor'),
+      termin:gv('m-termin')||null, cas:gv('m-cas'), miesto:gv('m-miesto'),
+      stav:gv('m-stav'), poznamka:gv('m-poznamka'),
+      updated:Date.now(), lastEditBy:currentOsoba, editNotifPotv:[]
+    };
+  } else {
+    data={
+      stav:gv('m-stav'), evCislo:gv('m-evcislo'), poznamka:gv('m-poznamka'),
+      updated:Date.now(), lastEditBy:currentOsoba, editNotifPotv:[]
+    };
+  }
   try{
     if(editId){
       const oldO=[...objednavky,...historia].find(x=>x.id===editId);
