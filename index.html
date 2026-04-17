@@ -551,7 +551,7 @@ window.renderTabulka=function(){
     h+='<td style="font-size:11px;color:var(--text3)">'+esc((videli||[]).join(', ')||'—')+'</td>';
     h+='<td onclick="event.stopPropagation()" style="white-space:nowrap">';
     if(isSef){ h+='<button class="btn btn-sm" onclick="editObjednavku(\''+o.id+'\')">✏️</button> <button class="btn btn-sm btn-danger" onclick="vymazObjednavku(\''+o.id+'\')">×</button>'; }
-    else{ h+='<button class="btn btn-sm" onclick="otvorZmenaStavu(\''+o.id+'\')">Stav</button>'; if(nevidena) h+=' <button class="btn btn-sm" onclick="potvrditJednu(\''+o.id+'\')">✓</button>'; }
+    else{ h+='<button class="btn btn-sm" onclick="editObjednavku(\''+o.id+'\')">✏️</button>'; if(nevidena) h+=' <button class="btn btn-sm" onclick="potvrditJednu(\''+o.id+'\')">✓</button>'; }
     h+='</td></tr>';
   });
   gi('tbl-body').innerHTML=h||'<tr><td colspan="13" style="text-align:center;padding:2rem;color:var(--text3)">Žiadne záznamy</td></tr>';
@@ -613,7 +613,7 @@ window.renderMoje=function(){
     h+='<td>'+esc(o.cas||'—')+'</td><td style="max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(o.miesto||'—')+'</td>';
     h+='<td><span class="chip-stav '+stavClass(o.stav)+'">'+esc(o.stav||'—')+'</span></td>';
     h+='<td style="max-width:150px;color:var(--text2);font-size:11px;font-style:'+(pz?'normal':'italic')+'">'+esc(pz||'—')+'</td>';
-    h+='<td onclick="event.stopPropagation()" style="white-space:nowrap"><button class="btn btn-sm" onclick="otvorZmenaStavu(\''+o.id+'\')">Stav</button> <button class="btn btn-sm" onclick="otvorPoznamku(\''+o.id+'\')">📝</button></td>';
+    h+='<td onclick="event.stopPropagation()" style="white-space:nowrap"><button class="btn btn-sm" onclick="editObjednavku(\''+o.id+'\')">✏️</button> <button class="btn btn-sm" onclick="otvorPoznamku(\''+o.id+'\')">📝</button></td>';
     h+='</tr>';
   });
   gi('moje-body').innerHTML=h||'<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--text3)">Žiadne merania</td></tr>';
@@ -872,13 +872,10 @@ window.otvorDetail=function(id){
     acts+=' <button class="btn btn-primary" onclick="zatvorDetail();editObjednavku(\''+id+'\')">✏️ Upraviť</button>';
     if(!o.archiv) acts+=' <button class="btn" onclick="presunutDoHistorie(\''+id+'\')" style="color:#6b7280;border-color:#6b7280">📦 Do histórie</button>';
   } else {
-    acts+=' <button class="btn btn-primary" onclick="zatvorDetail();otvorZmenaStavu(\''+id+'\')">Zmeniť stav</button>';
+    acts+=' <button class="btn btn-primary" onclick="zatvorDetail();editObjednavku(\''+id+'\')">✏️ Upraviť</button>';
     acts+=' <button class="btn" onclick="zatvorDetail();otvorPoznamku(\''+id+'\')">📝 Moja poznámka</button>';
     const videl=(o.videli||[]).includes(currentOsoba);
     if(!videl&&o.osoba===currentOsoba) acts+=' <button class="btn" onclick="zatvorDetail();potvrditJednu(\''+id+'\')">✓ Videl(a) som</button>';
-    if(isSef) acts+=' <button class="btn" onclick="editObjednavku(\''+id+'\')" style="display:none">✏️</button>';
-    // zamestnanec moze pridat ev. cislo
-    acts+=' <button class="btn" onclick="zatvorDetail();editObjednavku(\''+id+'\')">📋 Ev. číslo</button>';
   }
   gi('det-actions').innerHTML=acts;
   gi('modal-detail').style.display='flex';
