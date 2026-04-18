@@ -581,7 +581,7 @@ window.renderHistoria=function(){
     h+='<td>'+(o.termin?formatDatum(o.termin):'—')+'</td>';
     h+='<td>'+esc(o.miesto||'—')+'</td><td>'+esc(o.poznamka||'')+'</td>';
     h+='<td onclick="event.stopPropagation()">';
-    if(isSef) h+='<button class="btn btn-sm" onclick="vychovatZHistorie(\''+o.id+'\')">↩ Obnoviť</button>';
+    if(isSef){ h+='<button class="btn btn-sm" onclick="vychovatZHistorie(\''+o.id+'\')">↩ Obnoviť</button> '; h+='<button class="btn btn-sm btn-danger" onclick="vymazObjednavku(\''+o.id+'\')">×</button>'; }
     h+='</td></tr>';
   });
   gi('historia-body').innerHTML=h||'<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--text3)">Žiadna história</td></tr>';
@@ -793,7 +793,7 @@ window.ulozitObjednavku=async function(){
       // Skontroluj či sa zmenil termin/cas/miesto a či je groupId
       const groupId=oldO?.groupId;
       const terminZmeneny=(data.termin!==oldO?.termin||data.cas!==oldO?.cas||data.miesto!==oldO?.miesto);
-      if(groupId&&terminZmeneny){
+      if(isSef&&groupId&&terminZmeneny){
         const groupMembers=objednavky.filter(o=>o.groupId===groupId&&o.id!==editId);
         if(groupMembers.length){
           pendingGroupData={termin:data.termin,cas:data.cas,miesto:data.miesto};
@@ -838,12 +838,12 @@ window.vymazObjednavku=async function(id){
 };
 
 // PRESUN DO HISTÓRIE (manuálne správcom)
-async function presunutDoHistorie(id){
+window.presunutDoHistorie=async function(id){
   if(!confirm('Presunúť objednávku do histórie?')) return;
   await updateDoc(doc(db,'objednavky',id),{archiv:true,stav:'odovzdané',updated:Date.now()});
   zatvorDetail();
   await nacitaj();
-}
+};
 
 // DETAIL
 window.otvorDetail=function(id){
