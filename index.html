@@ -44,6 +44,9 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
 .tbl th:hover{color:var(--text)}
 .tbl td{padding:7px 10px;border-bottom:1px solid var(--border3);vertical-align:middle}
 .tbl tr:hover td{background:var(--bg3)}
+.col-fix{white-space:nowrap;text-align:center}
+.col-wrap{white-space:normal;word-break:break-word;min-width:120px}
+.tbl td.col-fix{text-align:center}
 .tbl tr.no-date td{opacity:.65}
 .tbl tr.nova-nevidena td{background:#fffbeb}
 [data-theme="dark"] .tbl tr.nova-nevidena td{background:#2a2600}
@@ -144,18 +147,18 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
       <div class="tbl-wrap">
         <table class="tbl">
           <thead><tr>
-            <th onclick="sortBy('evCislo')">Ev. číslo ↕</th>
-            <th onclick="sortBy('objednavatel')">Objednávateľ ↕</th>
-            <th onclick="sortBy('kontakt')">Kontakt</th>
-            <th>Mobil</th>
-            <th onclick="sortBy('osoba')">Zodpovedný ↕</th>
-            <th onclick="sortBy('faktor')">Faktor ↕</th>
-            <th onclick="sortBy('termin')">Termín ↕</th>
-            <th>Čas</th>
-            <th>Miesto</th>
-            <th onclick="sortBy('stav')">Stav ↕</th>
-            <th>Poznámka</th>
-            <th>Videli</th>
+            <th class="col-fix" onclick="sortBy('evCislo')">Ev. číslo ↕</th>
+            <th class="col-wrap" onclick="sortBy('objednavatel')">Objednávateľ ↕</th>
+            <th class="col-wrap" onclick="sortBy('kontakt')">Kontakt</th>
+            <th class="col-fix">Mobil</th>
+            <th class="col-fix" onclick="sortBy('osoba')">Zodpovedný ↕</th>
+            <th class="col-fix" onclick="sortBy('faktor')">Faktor ↕</th>
+            <th class="col-fix" onclick="sortBy('termin')">Termín ↕</th>
+            <th class="col-fix">Čas</th>
+            <th class="col-wrap">Miesto</th>
+            <th class="col-fix" onclick="sortBy('stav')">Stav ↕</th>
+            <th class="col-wrap">Poznámka</th>
+            <th class="col-fix">Videli</th>
             <th></th>
           </tr></thead>
           <tbody id="tbl-body"></tbody>
@@ -180,8 +183,19 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
       <div class="tbl-wrap">
         <table class="tbl">
           <thead><tr>
-            <th>Ev. číslo</th><th>Objednávateľ</th><th>Kontakt</th><th>Zodpovedný</th>
-            <th>Faktor</th><th>Termín</th><th>Miesto</th><th>Poznámka</th><th></th>
+            <th class="col-fix">Ev. číslo</th>
+            <th class="col-wrap">Objednávateľ</th>
+            <th class="col-wrap">Kontakt</th>
+            <th class="col-fix">Mobil</th>
+            <th class="col-fix">Zodpovedný</th>
+            <th class="col-fix">Faktor</th>
+            <th class="col-fix">Termín</th>
+            <th class="col-fix">Čas</th>
+            <th class="col-wrap">Miesto</th>
+            <th class="col-fix">Stav</th>
+            <th class="col-wrap">Poznámka</th>
+            <th class="col-fix">Videli</th>
+            <th></th>
           </tr></thead>
           <tbody id="historia-body"></tbody>
         </table>
@@ -537,18 +551,18 @@ window.renderTabulka=function(){
     const nevidena=o.osoba===currentOsoba&&!videli.includes(currentOsoba);
     const jeGroup=!!o.groupId;
     h+='<tr class="'+(o.termin?'':'no-date')+(nevidena?' nova-nevidena':'')+(jeGroup?' group-member':'')+'" onclick="otvorDetail(\''+o.id+'\')" style="cursor:pointer">';
-    h+='<td><b>'+esc(o.evCislo||'—')+'</b>'+(nevidena?'<span class="badge-nova"></span>':'')+'</td>';
-    h+='<td>'+esc(o.objednavatel||'—')+'</td>';
-    h+='<td>'+esc(o.kontakt||'—')+'</td>';
-    h+='<td>'+esc(o.mobil||'—')+'</td>';
-    h+='<td><span class="chip-os os-'+esc(o.osoba||'')+'">'+esc(o.osoba||'—')+'</span></td>';
-    h+='<td><span class="chip-faktor">'+esc(o.faktor||'—')+'</span></td>';
-    h+='<td>'+(o.termin?formatDatum(o.termin):'<span style="color:var(--text4);font-style:italic">bez dátumu</span>')+'</td>';
-    h+='<td>'+esc(o.cas||'—')+'</td>';
-    h+='<td style="max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(o.miesto||'—')+'</td>';
-    h+='<td><span class="chip-stav '+stavClass(o.stav)+'">'+esc(o.stav||'—')+'</span></td>';
-    h+='<td style="max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text2)">'+esc(o.poznamka||'')+'</td>';
-    h+='<td style="font-size:11px;color:var(--text3)">'+esc((videli||[]).join(', ')||'—')+'</td>';
+    h+='<td class="col-fix"><b>'+esc(o.evCislo||'—')+'</b>'+(nevidena?'<span class="badge-nova"></span>':'')+'</td>';
+    h+='<td class="col-wrap">'+esc(o.objednavatel||'—')+'</td>';
+    h+='<td class="col-wrap">'+esc(o.kontakt||'—')+'</td>';
+    h+='<td class="col-fix">'+esc(o.mobil||'—')+'</td>';
+    h+='<td class="col-fix"><span class="chip-os os-'+esc(o.osoba||'')+'">'+esc(o.osoba||'—')+'</span></td>';
+    h+='<td class="col-fix"><span class="chip-faktor">'+esc(o.faktor||'—')+'</span></td>';
+    h+='<td class="col-fix">'+(o.termin?formatDatum(o.termin):'<span style="color:var(--text4);font-style:italic">bez dátumu</span>')+'</td>';
+    h+='<td class="col-fix">'+esc(o.cas||'—')+'</td>';
+    h+='<td class="col-wrap">'+esc(o.miesto||'—')+'</td>';
+    h+='<td class="col-fix"><span class="chip-stav '+stavClass(o.stav)+'">'+esc(o.stav||'—')+'</span></td>';
+    h+='<td class="col-wrap">'+esc(o.poznamka||'')+'</td>';
+    h+='<td class="col-fix" style="font-size:11px;color:var(--text3)">'+esc((videli||[]).join(', ')||'—')+'</td>';
     h+='<td onclick="event.stopPropagation()" style="white-space:nowrap">';
     if(isSef){ h+='<button class="btn btn-sm" onclick="editObjednavku(\''+o.id+'\')">✏️</button> <button class="btn btn-sm btn-danger" onclick="vymazObjednavku(\''+o.id+'\')">×</button>'; }
     else{ h+='<button class="btn btn-sm" onclick="editObjednavku(\''+o.id+'\')">✏️</button>'; if(nevidena) h+=' <button class="btn btn-sm" onclick="potvrditJednu(\''+o.id+'\')">✓</button>'; }
@@ -574,17 +588,25 @@ window.renderHistoria=function(){
   data.sort((a,b)=>(a.termin||'')>(b.termin||'')?-1:1);
   let h='';
   data.forEach(o=>{
+    const videli=o.videli||[];
     h+='<tr onclick="otvorDetail(\''+o.id+'\')" style="cursor:pointer">';
-    h+='<td><b>'+esc(o.evCislo||'—')+'</b></td><td>'+esc(o.objednavatel||'—')+'</td><td>'+esc(o.kontakt||'—')+'</td>';
-    h+='<td><span class="chip-os os-'+esc(o.osoba||'')+'">'+esc(o.osoba||'—')+'</span></td>';
-    h+='<td><span class="chip-faktor">'+esc(o.faktor||'—')+'</span></td>';
-    h+='<td>'+(o.termin?formatDatum(o.termin):'—')+'</td>';
-    h+='<td>'+esc(o.miesto||'—')+'</td><td>'+esc(o.poznamka||'')+'</td>';
-    h+='<td onclick="event.stopPropagation()">';
-    if(isSef){ h+='<button class="btn btn-sm" onclick="vychovatZHistorie(\''+o.id+'\')">↩ Obnoviť</button> '; h+='<button class="btn btn-sm btn-danger" onclick="vymazObjednavku(\''+o.id+'\')">×</button>'; }
+    h+='<td class="col-fix"><b>'+esc(o.evCislo||'—')+'</b></td>';
+    h+='<td class="col-wrap">'+esc(o.objednavatel||'—')+'</td>';
+    h+='<td class="col-wrap">'+esc(o.kontakt||'—')+'</td>';
+    h+='<td class="col-fix">'+esc(o.mobil||'—')+'</td>';
+    h+='<td class="col-fix"><span class="chip-os os-'+esc(o.osoba||'')+'">'+esc(o.osoba||'—')+'</span></td>';
+    h+='<td class="col-fix"><span class="chip-faktor">'+esc(o.faktor||'—')+'</span></td>';
+    h+='<td class="col-fix">'+(o.termin?formatDatum(o.termin):'<span style="color:var(--text4);font-style:italic">bez dátumu</span>')+'</td>';
+    h+='<td class="col-fix">'+esc(o.cas||'—')+'</td>';
+    h+='<td class="col-wrap">'+esc(o.miesto||'—')+'</td>';
+    h+='<td class="col-fix"><span class="chip-stav '+stavClass(o.stav)+'">'+esc(o.stav||'—')+'</span></td>';
+    h+='<td class="col-wrap">'+esc(o.poznamka||'')+'</td>';
+    h+='<td class="col-fix" style="font-size:11px;color:var(--text3)">'+esc(videli.join(', ')||'—')+'</td>';
+    h+='<td onclick="event.stopPropagation()" style="white-space:nowrap">';
+    if(isSef){ h+='<button class="btn btn-sm" onclick="vychovatZHistorie(\''+o.id+'\')">↩</button> '; h+='<button class="btn btn-sm btn-danger" onclick="vymazObjednavku(\''+o.id+'\')">×</button>'; }
     h+='</td></tr>';
   });
-  gi('historia-body').innerHTML=h||'<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--text3)">Žiadna história</td></tr>';
+  gi('historia-body').innerHTML=h||'<tr><td colspan="13" style="text-align:center;padding:2rem;color:var(--text3)">Žiadna história</td></tr>';
   gi('historia-info').textContent='Celkom: '+data.length;
 };
 
@@ -599,7 +621,7 @@ window.renderMoje=function(){
   if(!currentOsoba) return;
   gi('moje-info-box').textContent='Zobrazujú sa merania pre: '+currentOsoba;
   const fStav=gv('mf-stav'),fRok=gv('mf-rok');
-  let data=[...objednavky,...historia].filter(o=>o.osoba===currentOsoba);
+  let data=objednavky.filter(o=>o.osoba===currentOsoba);
   if(fStav) data=data.filter(o=>o.stav===fStav);
   if(fRok) data=data.filter(o=>o.termin&&o.termin.startsWith(fRok));
   data.sort((a,b)=>(a.termin||'zzz')>(b.termin||'zzz')?1:-1);
@@ -608,10 +630,10 @@ window.renderMoje=function(){
     const pz=osobnePozn[o.id]||'';
     h+='<tr onclick="otvorDetail(\''+o.id+'\')" style="cursor:pointer">';
     h+='<td><b>'+esc(o.evCislo||'—')+'</b></td><td>'+esc(o.objednavatel||'—')+'</td>';
-    h+='<td><span class="chip-faktor">'+esc(o.faktor||'—')+'</span></td>';
-    h+='<td>'+(o.termin?formatDatum(o.termin):'<span style="color:var(--text4);font-style:italic">bez dátumu</span>')+'</td>';
+    h+='<td class="col-fix"><span class="chip-faktor">'+esc(o.faktor||'—')+'</span></td>';
+    h+='<td class="col-fix">'+(o.termin?formatDatum(o.termin):'<span style="color:var(--text4);font-style:italic">bez dátumu</span>')+'</td>';
     h+='<td>'+esc(o.cas||'—')+'</td><td style="max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(o.miesto||'—')+'</td>';
-    h+='<td><span class="chip-stav '+stavClass(o.stav)+'">'+esc(o.stav||'—')+'</span></td>';
+    h+='<td class="col-fix"><span class="chip-stav '+stavClass(o.stav)+'">'+esc(o.stav||'—')+'</span></td>';
     h+='<td style="max-width:150px;color:var(--text2);font-size:11px;font-style:'+(pz?'normal':'italic')+'">'+esc(pz||'—')+'</td>';
     h+='<td onclick="event.stopPropagation()" style="white-space:nowrap"><button class="btn btn-sm" onclick="editObjednavku(\''+o.id+'\')">✏️</button> <button class="btn btn-sm" onclick="otvorPoznamku(\''+o.id+'\')">📝</button></td>';
     h+='</tr>';
@@ -796,7 +818,7 @@ window.ulozitObjednavku=async function(){
       if(isSef&&groupId&&terminZmeneny){
         const groupMembers=objednavky.filter(o=>o.groupId===groupId&&o.id!==editId);
         if(groupMembers.length){
-          pendingGroupData={termin:data.termin,cas:data.cas,miesto:data.miesto};
+          pendingGroupData={termin:data.termin,cas:data.cas,miesto:data.miesto,objednavatel:data.objednavatel,kontakt:data.kontakt,mobil:data.mobil,mail:data.mail};
           pendingGroupIds=groupMembers.map(o=>o.id);
           const names=groupMembers.map(o=>'<b>'+esc(o.faktor||'?')+'</b> ('+esc(o.osoba||'?')+')').join(', ');
           gi('group-info').innerHTML='Zmenili ste termín/čas/miesto. Súvisiace objednávky pre rovnakú zákazku: '+names+'<br><br>Chcete zmeniť termín/čas/miesto aj na nich?';
@@ -811,7 +833,7 @@ window.ulozitObjednavku=async function(){
       await updateDoc(doc(db,'objednavky',editId),data);
     } else {
       const gId=gi('modal')?._groupId||null;
-      data.evCislo=''; data.videli=[]; data.created=Date.now();
+      data.evCislo=gv('m-evcislo')||''; data.videli=[]; data.created=Date.now();
       if(gId) data.groupId=gId;
       if(gi('modal')) gi('modal')._groupId=null;
       await addDoc(collection(db,'objednavky'),data);
