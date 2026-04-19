@@ -151,6 +151,7 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
       <div class="tbl-wrap">
         <table class="tbl">
           <thead><tr>
+            <th class="col-fix" style="color:var(--text4)">P.č.</th>
             <th class="col-fix" onclick="sortBy('evCislo')">Ev. číslo ↕</th>
             <th class="col-wrap" onclick="sortBy('objednavatel')">Objednávateľ ↕</th>
             <th class="col-wrap" onclick="sortBy('kontakt')">Kontakt</th>
@@ -244,6 +245,7 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
       <div class="tbl-wrap">
         <table class="tbl">
           <thead><tr>
+            <th class="col-fix" style="color:var(--text4)">P.č.</th>
             <th class="col-fix">Ev. číslo</th>
             <th class="col-wrap">Objednávateľ</th>
             <th class="col-wrap">Kontakt</th>
@@ -446,11 +448,12 @@ onAuthStateChanged(auth,user=>{
 async function nacitaj(){
   try{
     const snap=await getDocs(query(collection(db,'objednavky'),orderBy('created','desc')));
+    const vsetky=[];
+    snap.forEach(d=>{ vsetky.push({id:d.id,...d.data()}); });
+    vsetky.sort((a,b)=>(a.poradCislo||a.created||0)-(b.poradCislo||b.created||0));
+    vsetky.forEach((o,i)=>{ if(!o.poradCislo) o.poradCislo=i+1; });
     objednavky=[]; historia=[];
-    snap.forEach(d=>{
-      const o={id:d.id,...d.data()};
-      if(o.archiv) historia.push(o); else objednavky.push(o);
-    });
+    vsetky.forEach(o=>{ if(o.archiv) historia.push(o); else objednavky.push(o); });
     await nacitajPoznamky();
     naplnRoky();
     renderNotify();
@@ -574,6 +577,8 @@ window.renderTabulka=function(){
     const nevidena=o.osoba===currentOsoba&&!videli.includes(currentOsoba);
     const jeGroup=!!o.groupId;
     h+='<tr class="'+(o.termin?'':'no-date')+(nevidena?' nova-nevidena':'')+(jeGroup?' group-member':'')+'" data-id="'+o.id+'" onclick="handleRowClick(event,\''+o.id+'\')" style="cursor:pointer">';
+    h+='<td class="col-fix" style="color:var(--text4);font-size:11px">'+(o.poradCislo||'—')+'</td>';
+    h+='<td class="col-fix" style="color:var(--text4);font-size:11px">'+(o.poradCislo||'—')+'</td>';
     h+='<td class="col-fix"><b>'+esc(o.evCislo||'—')+'</b>'+(nevidena?'<span class="badge-nova"></span>':'')+'</td>';
     h+='<td class="col-wrap">'+esc(o.objednavatel||'—')+'</td>';
     h+='<td class="col-wrap">'+esc(o.kontakt||'—')+'</td>';
@@ -591,7 +596,7 @@ window.renderTabulka=function(){
     else{ h+='<button class="btn btn-sm" onclick="editObjednavku(\''+o.id+'\')">✏️</button>'; if(nevidena) h+=' <button class="btn btn-sm" onclick="potvrditJednu(\''+o.id+'\')">✓</button>'; }
     h+='</td></tr>';
   });
-  gi('tbl-body').innerHTML=h||'<tr><td colspan="13" style="text-align:center;padding:2rem;color:var(--text3)">Žiadne záznamy</td></tr>';
+  gi('tbl-body').innerHTML=h||'<tr><td colspan="14" style="text-align:center;padding:2rem;color:var(--text3)">Žiadne záznamy</td></tr>';
   gi('tbl-info').textContent='Zobrazených: '+data.length+' / '+objednavky.length;
   setTimeout(()=>{ updateSelectionUI(); },0);
 };
@@ -630,7 +635,7 @@ window.renderHistoria=function(){
     if(isSef){ h+='<button class="btn btn-sm" onclick="vychovatZHistorie(\''+o.id+'\')">↩</button>'; }
     h+='</td></tr>';
   });
-  gi('historia-body').innerHTML=h||'<tr><td colspan="13" style="text-align:center;padding:2rem;color:var(--text3)">Žiadna história</td></tr>';
+  gi('historia-body').innerHTML=h||'<tr><td colspan="14" style="text-align:center;padding:2rem;color:var(--text3)">Žiadna história</td></tr>';
   gi('historia-info').textContent='Celkom: '+data.length;
   setTimeout(updateSelectionHistoriaUI,0);
 };
@@ -655,6 +660,7 @@ window.renderMoje=function(){
     const pz=osobnePozn[o.id]||'';
     const videli=o.videli||[];
     h+='<tr onclick="otvorDetail(\''+o.id+'\')" style="cursor:pointer">';
+    h+='<td class="col-fix" style="color:var(--text4);font-size:11px">'+(o.poradCislo||'—')+'</td>';
     h+='<td class="col-fix"><b>'+esc(o.evCislo||'—')+'</b></td>';
     h+='<td class="col-wrap">'+esc(o.objednavatel||'—')+'</td>';
     h+='<td class="col-wrap">'+esc(o.kontakt||'—')+'</td>';
@@ -867,6 +873,8 @@ window.ulozitObjednavku=async function(){
     } else {
       const gId=gi('modal')?._groupId||null;
       data.evCislo=gv('m-evcislo')||''; data.videli=[]; data.created=Date.now();
+      const allSnap=await getDocs(collection(db,'objednavky'));
+      data.poradCislo=allSnap.size+1;
       if(gId) data.groupId=gId;
       if(gi('modal')) gi('modal')._groupId=null;
       await addDoc(collection(db,'objednavky'),data);
@@ -886,9 +894,21 @@ window.potvrditGroupZmenu=async function(){
   await nacitaj();
 };
 
+async function prepocitajPoradie(){
+  const snap=await getDocs(query(collection(db,'objednavky'),orderBy('poradCislo','asc')));
+  const docs=[];
+  snap.forEach(d=>docs.push(d));
+  // fallback - sort by created if no poradCislo
+  docs.sort((a,b)=>(a.data().poradCislo||a.data().created||0)-(b.data().poradCislo||b.data().created||0));
+  const batch=writeBatch(db);
+  docs.forEach((d,i)=>batch.update(doc(db,'objednavky',d.id),{poradCislo:i+1}));
+  await batch.commit();
+}
+
 window.vymazObjednavku=async function(id){
   if(!confirm('Naozaj vymazať?')) return;
   await deleteDoc(doc(db,'objednavky',id));
+  await prepocitajPoradie();
   await nacitaj();
 };
 
@@ -947,8 +967,8 @@ window.exportCSV=function(tab){
   if(fOs) d=d.filter(o=>o.osoba===fOs);
   if(fRok) d=d.filter(o=>o.termin&&o.termin.startsWith(fRok));
   if(fS) d=d.filter(o=>[o.evCislo,o.objednavatel,o.kontakt,o.miesto].join(' ').toLowerCase().includes(fS));
-  const hdr=['Ev.číslo','Objednávateľ','Kontakt','Mobil','Email','Zodpovedný','Faktor','Termín','Čas','Miesto','Stav','Poznámka'];
-  const rows=d.map(o=>[o.evCislo,o.objednavatel,o.kontakt,o.mobil,o.mail,o.osoba,o.faktor,o.termin?formatDatum(o.termin):'',o.cas,o.miesto,o.stav,o.poznamka].map(v=>(v||'').replace(/;/g,',')).join(';'));
+  const hdr=['P.c.','GroupId','Ev.cislo','Objednavatel','Kontakt','Mobil','Email','Zodpovedny','Faktor','Termin','Cas','Miesto','Stav','Poznamka'];
+  const rows=d.map(o=>[o.poradCislo||'',o.groupId||'',o.evCislo,o.objednavatel,o.kontakt,o.mobil,o.mail,o.osoba,o.faktor,o.termin?formatDatum(o.termin):'',o.cas,o.miesto,o.stav,o.poznamka].map(v=>(v||'').replace(/;/g,',')).join(';'));
   const csv='\uFEFF'+hdr.join(';')+'\n'+rows.join('\n');
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
   a.download=(tab==='historia'?'historia':'objednavky')+'_export.csv'; a.click();
@@ -961,24 +981,28 @@ window.importCSV=async function(event,tab){
   if(lines.length<2){ alert('CSV je prázdne'); return; }
   const hdr=lines[0].split(';').map(h=>h.replace(/^"|"$/g,'').trim());
   const idx=(n)=>hdr.findIndex(h=>h===n);
-  let count=0;
+  let count=0; const groupMap={}; let grpCounter=0;
   for(let i=1;i<lines.length;i++){
     const cols=lines[i].split(';').map(c=>c.replace(/^"|"$/g,'').replace(/""/g,'"').trim());
     const get=(n)=>cols[idx(n)]||'';
     const terminRaw=get('Termín');
     let termin='';
     if(terminRaw){ const p=terminRaw.split('.'); if(p.length===3) termin=p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0'); }
+    const oldGroupId=get('GroupId');
+    let newGroupId=null;
+    if(oldGroupId){ if(!groupMap[oldGroupId]) groupMap[oldGroupId]='grp'+Date.now()+Math.random().toString(36).slice(2,6); newGroupId=groupMap[oldGroupId]; }
     const data={
-      evCislo:get('Ev.číslo'), objednavatel:get('Objednávateľ'), kontakt:get('Kontakt'),
-      mobil:get('Mobil'), mail:get('Email'), osoba:get('Zodpovedný'), faktor:get('Faktor'),
-      termin:termin||null, cas:get('Čas'), miesto:get('Miesto'),
-      stav:get('Stav')||'objednané', poznamka:get('Poznámka'),
-      archiv:tab==='historia', videli:[], created:Date.now(), updated:Date.now()
+      evCislo:get('Ev.cislo')||get('Ev.číslo'), objednavatel:get('Objednavatel')||get('Objednávateľ'), kontakt:get('Kontakt'),
+      mobil:get('Mobil'), mail:get('Email'), osoba:get('Zodpovedny')||get('Zodpovedný'), faktor:get('Faktor'),
+      termin:termin||null, cas:get('Cas')||get('Čas'), miesto:get('Miesto'),
+      stav:get('Stav')||'objednané', poznamka:get('Poznamka')||get('Poznámka'),
+      groupId:newGroupId, archiv:tab==='historia', videli:[], created:Date.now()+(i*100), updated:Date.now()
     };
     await addDoc(collection(db,'objednavky'),data);
     count++;
   }
   event.target.value='';
+  await prepocitajPoradie();
   alert('Importovaných: '+count+' záznamov');
   await nacitaj();
 };
@@ -1049,6 +1073,7 @@ window.hromadneVymazatHist=async function(){
   }
   selectedIdsHist.clear(); lastSelectedIdHist=null;
   gi('btn-hromadne-vymaz-hist').style.display='none';
+  await prepocitajPoradie();
   await nacitaj();
 };
 
@@ -1060,6 +1085,7 @@ window.hromadneVymazat=async function(){
   }
   selectedIds.clear(); lastSelectedId=null;
   gi('btn-hromadne-vymaz').style.display='none';
+  await prepocitajPoradie();
   await nacitaj();
 };
 
