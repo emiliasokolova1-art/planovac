@@ -89,6 +89,9 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
 .edit-notify{background:#f0f7ff;border:1px solid #93c5fd;border-radius:10px;padding:10px 14px;margin-bottom:1rem;font-size:12px;color:#1e40af}
 [data-theme="dark"] .edit-notify{background:#0f1f3a;border-color:#1d4ed8;color:#93c5fd}
 .badge-nova{display:inline-block;width:8px;height:8px;background:#f59e0b;border-radius:50%;margin-left:4px;vertical-align:middle}
+.row-selected td{background:#dbeafe!important}
+[data-theme="dark"] .row-selected td{background:#1e3a5f!important}
+.tbl tbody tr[data-id]{user-select:none}
 @media(max-width:700px){.grid2,.grid3{grid-template-columns:1fr}.app{padding:.5rem}}
 </style>
 </head>
@@ -142,6 +145,7 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
       <button class="btn btn-sm" onclick="exportCSV('tabulka')">📥 Export CSV</button>
       <label class="btn btn-sm" style="cursor:pointer">📤 Import CSV<input type="file" accept=".csv" style="display:none" onchange="importCSV(event,'tabulka')"></label>
       <button class="btn btn-sm btn-danger" id="btn-hromadne-vymaz" style="display:none" onclick="hromadneVymazat()">🗑 Vymazať označené</button>
+      <span id="sel-count" style="font-size:12px;color:var(--text3);align-self:center"></span>
     </div>
     <div class="card" style="padding:0">
       <div class="tbl-wrap">
@@ -159,7 +163,7 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
             <th class="col-fix" onclick="sortBy('stav')">Stav ↕</th>
             <th class="col-wrap">Poznámka</th>
             <th class="col-fix">Videli</th>
-            <th></th>
+            <th id="th-akcie"></th>
           </tr></thead>
           <tbody id="tbl-body"></tbody>
         </table>
@@ -195,7 +199,7 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
             <th class="col-fix">Stav</th>
             <th class="col-wrap">Poznámka</th>
             <th class="col-fix">Videli</th>
-            <th></th>
+            <th id="th-akcie"></th>
           </tr></thead>
           <tbody id="historia-body"></tbody>
         </table>
@@ -579,12 +583,13 @@ window.renderTabulka=function(){
     h+='<td class="col-wrap">'+esc(o.poznamka||'')+'</td>';
     h+='<td class="col-fix" style="font-size:11px;color:var(--text3)">'+esc((videli||[]).join(', ')||'—')+'</td>';
     h+='<td onclick="event.stopPropagation()" style="white-space:nowrap">';
-    if(isSef){ h+='<input type="checkbox" class="sel-check" data-id="'+o.id+'" onclick="event.stopPropagation()" style="margin-right:6px;width:15px;height:15px;cursor:pointer"> <button class="btn btn-sm" onclick="editObjednavku(\''+o.id+'\')">✏️</button> <button class="btn btn-sm" onclick="kopirovatObjednavku(\''+o.id+'\')">📋</button> <button class="btn btn-sm btn-danger" onclick="vymazObjednavku(\''+o.id+'\')">×</button>'; }
+    if(isSef){ h+='<button class="btn btn-sm" onclick="editObjednavku(\''+o.id+'\')">✏️</button> <button class="btn btn-sm" onclick="kopirovatObjednavku(\''+o.id+'\')">📋</button> <button class="btn btn-sm btn-danger" onclick="vymazObjednavku(\''+o.id+'\')">×</button>'; }
     else{ h+='<button class="btn btn-sm" onclick="editObjednavku(\''+o.id+'\')">✏️</button>'; if(nevidena) h+=' <button class="btn btn-sm" onclick="potvrditJednu(\''+o.id+'\')">✓</button>'; }
     h+='</td></tr>';
   });
   gi('tbl-body').innerHTML=h||'<tr><td colspan="13" style="text-align:center;padding:2rem;color:var(--text3)">Žiadne záznamy</td></tr>';
   gi('tbl-info').textContent='Zobrazených: '+data.length+' / '+objednavky.length;
+  setTimeout(updateSelectionUI,0);
 };
 
 window.sortBy=function(k){ if(sortKol===k) sortAsc=!sortAsc; else{sortKol=k;sortAsc=true;} renderTabulka(); };
@@ -644,7 +649,7 @@ window.renderMoje=function(){
   data.forEach(o=>{
     const pz=osobnePozn[o.id]||'';
     const videli=o.videli||[];
-    h+='<tr onclick="otvorDetail(\''+o.id+'\')" style="cursor:pointer">';
+    h+='<tr data-id="'+o.id+'" ondblclick="otvorDetail(\''+o.id+'\')" onclick="handleRowClick(event,\''+o.id+'\')" style="cursor:pointer">';
     h+='<td class="col-fix"><b>'+esc(o.evCislo||'—')+'</b></td>';
     h+='<td class="col-wrap">'+esc(o.objednavatel||'—')+'</td>';
     h+='<td class="col-wrap">'+esc(o.kontakt||'—')+'</td>';
@@ -995,24 +1000,86 @@ window.kopirovatObjednavku=function(id){
 
 // HROMADNÉ MAZANIE
 window.hromadneVymazat=async function(){
-  const checked=[...document.querySelectorAll('.sel-check:checked')].map(el=>el.dataset.id);
-  if(!checked.length){ alert('Žiadne objednávky nie sú označené.'); return; }
-  if(!confirm('Vymazať '+checked.length+' označených objednávok? Akcia je nevratná.')) return;
-  for(const id of checked){
+  if(!selectedIds.size){ alert('Žiadne objednávky nie sú označené.'); return; }
+  if(!confirm('Vymazať '+selectedIds.size+' označených objednávok? Akcia je nevratná.')) return;
+  for(const id of [...selectedIds]){
     await deleteDoc(doc(db,'objednavky',id));
   }
+  selectedIds.clear(); lastSelectedId=null;
   gi('btn-hromadne-vymaz').style.display='none';
   await nacitaj();
 };
 
-// sledovanie checkboxov
-document.addEventListener('change',function(e){
-  if(e.target.classList.contains('sel-check')){
-    const anyChecked=document.querySelectorAll('.sel-check:checked').length>0;
-    const btn=gi('btn-hromadne-vymaz');
-    if(btn) btn.style.display=anyChecked?'':'none';
+// SELEKCIA RIADKOV
+let selectedIds=new Set();
+let lastSelectedId=null;
+let isDragging=false, dragStartId=null, dragIds=[];
+
+window.handleRowClick=function(e,id){
+  if(e.target.tagName==='BUTTON'||e.target.tagName==='INPUT') return;
+  if(!isSef){ otvorDetail(id); return; }
+  if(e.shiftKey&&lastSelectedId){
+    // shift+klik - vyberie rozsah
+    const rows=[...document.querySelectorAll('.tbl tbody tr[data-id]')];
+    const ids=rows.map(r=>r.dataset.id);
+    const a=ids.indexOf(lastSelectedId), b=ids.indexOf(id);
+    const from=Math.min(a,b), to=Math.max(a,b);
+    ids.slice(from,to+1).forEach(rid=>selectedIds.add(rid));
+  } else if(e.ctrlKey||e.metaKey){
+    // ctrl+klik - toggle
+    if(selectedIds.has(id)) selectedIds.delete(id);
+    else selectedIds.add(id);
+    lastSelectedId=id;
+  } else {
+    // obyčajný klik - vyber len tento
+    if(selectedIds.size===1&&selectedIds.has(id)){
+      selectedIds.clear(); lastSelectedId=null;
+    } else {
+      selectedIds.clear(); selectedIds.add(id); lastSelectedId=id;
+    }
   }
-});
+  updateSelectionUI();
+};
+
+function updateSelectionUI(){
+  document.querySelectorAll('.tbl tbody tr[data-id]').forEach(row=>{
+    const sel=selectedIds.has(row.dataset.id);
+    row.classList.toggle('row-selected',sel);
+  });
+  const btn=gi('btn-hromadne-vymaz');
+  if(btn) btn.style.display=selectedIds.size>0?'':'none';
+  const lbl=gi('sel-count');
+  if(lbl) lbl.textContent=selectedIds.size>0?'('+selectedIds.size+' označených)':'';
+}
+
+// drag-to-select
+(function(){
+  let dragging=false, startY=0, startRow=null;
+  document.addEventListener('mousedown',function(e){
+    const row=e.target.closest('tr[data-id]');
+    if(!row||!isSef||e.button!==0) return;
+    if(e.target.tagName==='BUTTON'||e.target.tagName==='INPUT') return;
+    dragging=false; startY=e.clientY; startRow=row;
+  });
+  document.addEventListener('mousemove',function(e){
+    if(!startRow) return;
+    if(Math.abs(e.clientY-startY)>6) dragging=true;
+    if(!dragging) return;
+    const rows=[...document.querySelectorAll('.tbl tbody tr[data-id]')];
+    const startIdx=rows.indexOf(startRow);
+    const hovered=e.target.closest('tr[data-id]');
+    if(!hovered) return;
+    const endIdx=rows.indexOf(hovered);
+    const from=Math.min(startIdx,endIdx), to=Math.max(startIdx,endIdx);
+    selectedIds.clear();
+    rows.slice(from,to+1).forEach(r=>selectedIds.add(r.dataset.id));
+    updateSelectionUI();
+    e.preventDefault();
+  });
+  document.addEventListener('mouseup',function(e){
+    startRow=null; dragging=false;
+  });
+})();
 
 // HELPERS
 function stavClass(s){
