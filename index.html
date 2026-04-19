@@ -569,7 +569,7 @@ window.renderTabulka=function(){
     const videli=o.videli||[];
     const nevidena=o.osoba===currentOsoba&&!videli.includes(currentOsoba);
     const jeGroup=!!o.groupId;
-    h+='<tr class="'+(o.termin?'':'no-date')+(nevidena?' nova-nevidena':'')+(jeGroup?' group-member':'')+'" onclick="otvorDetail(\''+o.id+'\')" style="cursor:pointer">';
+    h+='<tr class="'+(o.termin?'':'no-date')+(nevidena?' nova-nevidena':'')+(jeGroup?' group-member':'')+'" data-id="'+o.id+'" onclick="handleRowClick(event,\''+o.id+'\')" style="cursor:pointer">';
     h+='<td class="col-fix"><b>'+esc(o.evCislo||'—')+'</b>'+(nevidena?'<span class="badge-nova"></span>':'')+'</td>';
     h+='<td class="col-wrap">'+esc(o.objednavatel||'—')+'</td>';
     h+='<td class="col-wrap">'+esc(o.kontakt||'—')+'</td>';
@@ -609,7 +609,7 @@ window.renderHistoria=function(){
   let h='';
   data.forEach(o=>{
     const videli=o.videli||[];
-    h+='<tr onclick="otvorDetail(\''+o.id+'\')" style="cursor:pointer">';
+    h+='<tr data-id="'+o.id+'" onclick="handleRowClick(event,\''+o.id+'\')" style="cursor:pointer">';
     h+='<td class="col-fix"><b>'+esc(o.evCislo||'—')+'</b></td>';
     h+='<td class="col-wrap">'+esc(o.objednavatel||'—')+'</td>';
     h+='<td class="col-wrap">'+esc(o.kontakt||'—')+'</td>';
@@ -649,7 +649,7 @@ window.renderMoje=function(){
   data.forEach(o=>{
     const pz=osobnePozn[o.id]||'';
     const videli=o.videli||[];
-    h+='<tr data-id="'+o.id+'" ondblclick="otvorDetail(\''+o.id+'\')" onclick="handleRowClick(event,\''+o.id+'\')" style="cursor:pointer">';
+    h+='<tr data-id="'+o.id+'" onclick="handleRowClick(event,\''+o.id+'\')" style="cursor:pointer">';
     h+='<td class="col-fix"><b>'+esc(o.evCislo||'—')+'</b></td>';
     h+='<td class="col-wrap">'+esc(o.objednavatel||'—')+'</td>';
     h+='<td class="col-wrap">'+esc(o.kontakt||'—')+'</td>';
@@ -1015,9 +1015,22 @@ let selectedIds=new Set();
 let lastSelectedId=null;
 let isDragging=false, dragStartId=null, dragIds=[];
 
+let clickTimer=null;
 window.handleRowClick=function(e,id){
   if(e.target.tagName==='BUTTON'||e.target.tagName==='INPUT') return;
   if(!isSef){ otvorDetail(id); return; }
+  if(e.detail===2){
+    // dvojklik - otvor detail
+    if(clickTimer){ clearTimeout(clickTimer); clickTimer=null; }
+    otvorDetail(id); return;
+  }
+  if(clickTimer){ clearTimeout(clickTimer); clickTimer=null; }
+  clickTimer=setTimeout(function(){
+    clickTimer=null;
+    doSelectRow(e,id);
+  },220);
+};
+function doSelectRow(e,id){
   if(e.shiftKey&&lastSelectedId){
     // shift+klik - vyberie rozsah
     const rows=[...document.querySelectorAll('.tbl tbody tr[data-id]')];
