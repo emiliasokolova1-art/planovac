@@ -44,8 +44,9 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
 .tbl th:hover{color:var(--text)}
 .tbl td{padding:7px 10px;border-bottom:1px solid var(--border3);vertical-align:middle}
 .tbl tr:hover td{background:var(--bg3)}
-.col-fix{white-space:nowrap}
+.col-fix{white-space:nowrap;text-align:center}
 .col-wrap{white-space:normal;word-break:break-word;min-width:120px}
+.tbl td.col-fix{text-align:center}
 .tbl tr.no-date td{opacity:.65}
 .tbl tr.nova-nevidena td{background:#fffbeb}
 [data-theme="dark"] .tbl tr.nova-nevidena td{background:#2a2600}
@@ -796,7 +797,7 @@ window.ulozitObjednavku=async function(){
   let data;
   if(isSef){
     data={
-      objednavatel:gv('m-obj'), kontakt:gv('m-kontakt'), mobil:gv('m-mobil'),
+      evCislo:gv('m-evcislo'), objednavatel:gv('m-obj'), kontakt:gv('m-kontakt'), mobil:gv('m-mobil'),
       mail:gv('m-mail'), osoba:gv('m-osoba'), faktor:gv('m-faktor'),
       termin:gv('m-termin')||null, cas:gv('m-cas'), miesto:gv('m-miesto'),
       stav:gv('m-stav'), poznamka:gv('m-poznamka'),
