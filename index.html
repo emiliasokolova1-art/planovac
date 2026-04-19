@@ -587,7 +587,7 @@ window.renderTabulka=function(){
     h+='<td class="col-wrap">'+esc(o.poznamka||'')+'</td>';
     h+='<td class="col-fix" style="font-size:11px;color:var(--text3)">'+esc((videli||[]).join(', ')||'—')+'</td>';
     h+='<td onclick="event.stopPropagation()" style="white-space:nowrap">';
-    if(isSef){ h+='<button class="btn btn-sm" onclick="editObjednavku(\''+o.id+'\')">✏️</button> <button class="btn btn-sm" onclick="kopirovatObjednavku(\''+o.id+'\')">&#9409;</button>'; }
+    if(isSef){ h+='<button class="btn btn-sm" onclick="editObjednavku(\''+o.id+'\')">✏️</button> <button class="btn btn-sm" onclick="kopirovatObjednavku(\''+o.id+'\')">📑</button>'; }
     else{ h+='<button class="btn btn-sm" onclick="editObjednavku(\''+o.id+'\')">✏️</button>'; if(nevidena) h+=' <button class="btn btn-sm" onclick="potvrditJednu(\''+o.id+'\')">✓</button>'; }
     h+='</td></tr>';
   });
