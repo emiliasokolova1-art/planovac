@@ -46,7 +46,6 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
 .tbl tr:hover td{background:var(--bg3)}
 .col-fix{white-space:nowrap}
 .col-wrap{white-space:normal;word-break:break-word;min-width:120px}
-.tbl td.col-fix{text-align:center}
 .tbl tr.no-date td{opacity:.65}
 .tbl tr.nova-nevidena td{background:#fffbeb}
 [data-theme="dark"] .tbl tr.nova-nevidena td{background:#2a2600}
@@ -142,6 +141,7 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
       <button class="btn btn-sm" onclick="resetFiltre('tabulka')">Zrušiť filtre</button>
       <button class="btn btn-sm" onclick="exportCSV('tabulka')">📥 Export CSV</button>
       <label class="btn btn-sm" style="cursor:pointer">📤 Import CSV<input type="file" accept=".csv" style="display:none" onchange="importCSV(event,'tabulka')"></label>
+      <button class="btn btn-sm btn-danger" id="btn-hromadne-vymaz" style="display:none" onclick="hromadneVymazat()">🗑 Vymazať označené</button>
     </div>
     <div class="card" style="padding:0">
       <div class="tbl-wrap">
@@ -235,7 +235,22 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
     <div class="card" style="padding:0">
       <div class="tbl-wrap">
         <table class="tbl">
-          <thead><tr><th>Ev. číslo</th><th>Objednávateľ</th><th>Faktor</th><th>Termín</th><th>Čas</th><th>Miesto</th><th>Stav</th><th>Moja poznámka</th><th></th></tr></thead>
+          <thead><tr>
+            <th class="col-fix">Ev. číslo</th>
+            <th class="col-wrap">Objednávateľ</th>
+            <th class="col-wrap">Kontakt</th>
+            <th class="col-fix">Mobil</th>
+            <th class="col-fix">Zodpovedný</th>
+            <th class="col-fix">Faktor</th>
+            <th class="col-fix">Termín</th>
+            <th class="col-fix">Čas</th>
+            <th class="col-wrap">Miesto</th>
+            <th class="col-fix">Stav</th>
+            <th class="col-wrap">Poznámka</th>
+            <th class="col-fix">Videli</th>
+            <th class="col-wrap">Moja poznámka</th>
+            <th></th>
+          </tr></thead>
           <tbody id="moje-body"></tbody>
         </table>
       </div>
@@ -564,7 +579,7 @@ window.renderTabulka=function(){
     h+='<td class="col-wrap">'+esc(o.poznamka||'')+'</td>';
     h+='<td class="col-fix" style="font-size:11px;color:var(--text3)">'+esc((videli||[]).join(', ')||'—')+'</td>';
     h+='<td onclick="event.stopPropagation()" style="white-space:nowrap">';
-    if(isSef){ h+='<button class="btn btn-sm" onclick="editObjednavku(\''+o.id+'\')">✏️</button> <button class="btn btn-sm btn-danger" onclick="vymazObjednavku(\''+o.id+'\')">×</button>'; }
+    if(isSef){ h+='<input type="checkbox" class="sel-check" data-id="'+o.id+'" onclick="event.stopPropagation()" style="margin-right:6px;width:15px;height:15px;cursor:pointer"> <button class="btn btn-sm" onclick="editObjednavku(\''+o.id+'\')">✏️</button> <button class="btn btn-sm" onclick="kopirovatObjednavku(\''+o.id+'\')">📋</button> <button class="btn btn-sm btn-danger" onclick="vymazObjednavku(\''+o.id+'\')">×</button>'; }
     else{ h+='<button class="btn btn-sm" onclick="editObjednavku(\''+o.id+'\')">✏️</button>'; if(nevidena) h+=' <button class="btn btn-sm" onclick="potvrditJednu(\''+o.id+'\')">✓</button>'; }
     h+='</td></tr>';
   });
@@ -628,17 +643,25 @@ window.renderMoje=function(){
   let h='';
   data.forEach(o=>{
     const pz=osobnePozn[o.id]||'';
+    const videli=o.videli||[];
     h+='<tr onclick="otvorDetail(\''+o.id+'\')" style="cursor:pointer">';
-    h+='<td><b>'+esc(o.evCislo||'—')+'</b></td><td>'+esc(o.objednavatel||'—')+'</td>';
+    h+='<td class="col-fix"><b>'+esc(o.evCislo||'—')+'</b></td>';
+    h+='<td class="col-wrap">'+esc(o.objednavatel||'—')+'</td>';
+    h+='<td class="col-wrap">'+esc(o.kontakt||'—')+'</td>';
+    h+='<td class="col-fix">'+esc(o.mobil||'—')+'</td>';
+    h+='<td class="col-fix"><span class="chip-os os-'+esc(o.osoba||'')+'">'+esc(o.osoba||'—')+'</span></td>';
     h+='<td class="col-fix"><span class="chip-faktor">'+esc(o.faktor||'—')+'</span></td>';
     h+='<td class="col-fix">'+(o.termin?formatDatum(o.termin):'<span style="color:var(--text4);font-style:italic">bez dátumu</span>')+'</td>';
-    h+='<td>'+esc(o.cas||'—')+'</td><td style="max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(o.miesto||'—')+'</td>';
+    h+='<td class="col-fix">'+esc(o.cas||'—')+'</td>';
+    h+='<td class="col-wrap">'+esc(o.miesto||'—')+'</td>';
     h+='<td class="col-fix"><span class="chip-stav '+stavClass(o.stav)+'">'+esc(o.stav||'—')+'</span></td>';
-    h+='<td style="max-width:150px;color:var(--text2);font-size:11px;font-style:'+(pz?'normal':'italic')+'">'+esc(pz||'—')+'</td>';
+    h+='<td class="col-wrap">'+esc(o.poznamka||'')+'</td>';
+    h+='<td class="col-fix" style="font-size:11px;color:var(--text3)">'+esc(videli.join(', ')||'—')+'</td>';
+    h+='<td class="col-wrap" style="color:var(--text2);font-size:11px;font-style:'+(pz?'normal':'italic')+'">'+esc(pz||'—')+'</td>';
     h+='<td onclick="event.stopPropagation()" style="white-space:nowrap"><button class="btn btn-sm" onclick="editObjednavku(\''+o.id+'\')">✏️</button> <button class="btn btn-sm" onclick="otvorPoznamku(\''+o.id+'\')">📝</button></td>';
     h+='</tr>';
   });
-  gi('moje-body').innerHTML=h||'<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--text3)">Žiadne merania</td></tr>';
+  gi('moje-body').innerHTML=h||'<tr><td colspan="14" style="text-align:center;padding:2rem;color:var(--text3)">Žiadne merania</td></tr>';
   gi('moje-info2').textContent='Celkom: '+data.length;
 };
 
@@ -915,7 +938,7 @@ window.exportCSV=function(tab){
   if(fRok) d=d.filter(o=>o.termin&&o.termin.startsWith(fRok));
   if(fS) d=d.filter(o=>[o.evCislo,o.objednavatel,o.kontakt,o.miesto].join(' ').toLowerCase().includes(fS));
   const hdr=['Ev.číslo','Objednávateľ','Kontakt','Mobil','Email','Zodpovedný','Faktor','Termín','Čas','Miesto','Stav','Poznámka'];
-  const rows=d.map(o=>[o.evCislo,o.objednavatel,o.kontakt,o.mobil,o.mail,o.osoba,o.faktor,o.termin?formatDatum(o.termin):'',o.cas,o.miesto,o.stav,o.poznamka].map(v=>'"'+(v||'').replace(/"/g,'""')+'"').join(';'));
+  const rows=d.map(o=>[o.evCislo,o.objednavatel,o.kontakt,o.mobil,o.mail,o.osoba,o.faktor,o.termin?formatDatum(o.termin):'',o.cas,o.miesto,o.stav,o.poznamka].map(v=>(v||'').replace(/;/g,',')).join(';'));
   const csv='\uFEFF'+hdr.join(';')+'\n'+rows.join('\n');
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
   a.download=(tab==='historia'?'historia':'objednavky')+'_export.csv'; a.click();
@@ -949,6 +972,47 @@ window.importCSV=async function(event,tab){
   alert('Importovaných: '+count+' záznamov');
   await nacitaj();
 };
+
+// KOPÍROVANIE
+window.kopirovatObjednavku=function(id){
+  const o=objednavky.find(x=>x.id===id); if(!o) return;
+  editId=null;
+  gi('modal-title').textContent='Nová objednávka (kópia)';
+  gi('btn-ulozit-faktor').style.display=isSef?'':'none';
+  sv('m-evcislo',''); sv('m-obj',o.objednavatel||''); sv('m-kontakt',o.kontakt||'');
+  sv('m-mobil',o.mobil||''); sv('m-mail',o.mail||''); sv('m-termin',o.termin||'');
+  sv('m-miesto',o.miesto||''); sv('m-poznamka',o.poznamka||'');
+  sv('m-osoba',o.osoba||'Lenka'); sv('m-faktor',o.faktor||'PA'); sv('m-stav',o.stav||'objednané');
+  naplnCasy(); sv('m-cas',o.cas||'08:00');
+  gi('koliz-warn').style.display='none';
+  ['m-obj','m-kontakt','m-mobil','m-mail','m-termin','m-miesto','m-osoba','m-faktor','m-cas'].forEach(fid=>{
+    const el=gi(fid); if(!el) return;
+    el.disabled=false; el.style.opacity='1';
+  });
+  if(o.termin) checkKolizia();
+  gi('modal').style.display='flex';
+};
+
+// HROMADNÉ MAZANIE
+window.hromadneVymazat=async function(){
+  const checked=[...document.querySelectorAll('.sel-check:checked')].map(el=>el.dataset.id);
+  if(!checked.length){ alert('Žiadne objednávky nie sú označené.'); return; }
+  if(!confirm('Vymazať '+checked.length+' označených objednávok? Akcia je nevratná.')) return;
+  for(const id of checked){
+    await deleteDoc(doc(db,'objednavky',id));
+  }
+  gi('btn-hromadne-vymaz').style.display='none';
+  await nacitaj();
+};
+
+// sledovanie checkboxov
+document.addEventListener('change',function(e){
+  if(e.target.classList.contains('sel-check')){
+    const anyChecked=document.querySelectorAll('.sel-check:checked').length>0;
+    const btn=gi('btn-hromadne-vymaz');
+    if(btn) btn.style.display=anyChecked?'':'none';
+  }
+});
 
 // HELPERS
 function stavClass(s){
