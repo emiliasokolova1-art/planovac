@@ -1065,34 +1065,7 @@ function updateSelectionUI(){
   if(lbl) lbl.textContent=selectedIds.size>0?'('+selectedIds.size+' označených)':'';
 }
 
-// drag-to-select
-(function(){
-  let dragging=false, startY=0, startRow=null;
-  document.addEventListener('mousedown',function(e){
-    const row=e.target.closest('tr[data-id]');
-    if(!row||!isSef||e.button!==0) return;
-    if(e.target.tagName==='BUTTON'||e.target.tagName==='INPUT') return;
-    dragging=false; startY=e.clientY; startRow=row;
-  });
-  document.addEventListener('mousemove',function(e){
-    if(!startRow) return;
-    if(Math.abs(e.clientY-startY)>6) dragging=true;
-    if(!dragging) return;
-    const rows=[...document.querySelectorAll('.tbl tbody tr[data-id]')];
-    const startIdx=rows.indexOf(startRow);
-    const hovered=e.target.closest('tr[data-id]');
-    if(!hovered) return;
-    const endIdx=rows.indexOf(hovered);
-    const from=Math.min(startIdx,endIdx), to=Math.max(startIdx,endIdx);
-    selectedIds.clear();
-    rows.slice(from,to+1).forEach(r=>selectedIds.add(r.dataset.id));
-    updateSelectionUI();
-    e.preventDefault();
-  });
-  document.addEventListener('mouseup',function(e){
-    startRow=null; dragging=false;
-  });
-})();
+
 
 // HELPERS
 function stavClass(s){
