@@ -894,10 +894,9 @@ window.potvrditGroupZmenu=async function(){
 };
 
 async function prepocitajPoradie(){
-  const snap=await getDocs(query(collection(db,'objednavky'),orderBy('poradCislo','asc')));
+  const snap=await getDocs(collection(db,'objednavky'));
   const docs=[];
   snap.forEach(d=>docs.push(d));
-  // fallback - sort by created if no poradCislo
   docs.sort((a,b)=>(a.data().poradCislo||a.data().created||0)-(b.data().poradCislo||b.data().created||0));
   const batch=writeBatch(db);
   docs.forEach((d,i)=>batch.update(doc(db,'objednavky',d.id),{poradCislo:i+1}));
