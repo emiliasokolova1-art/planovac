@@ -40,11 +40,11 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
 @keyframes spin{to{transform:rotate(360deg)}}
 .tbl-wrap{overflow-x:auto}
 .tbl{width:100%;border-collapse:collapse;font-size:12px}
-.tbl th{font-size:11px;font-weight:500;color:var(--text3);text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap;background:var(--bg3);cursor:pointer;user-select:none}
+.tbl th{font-size:11px;font-weight:500;color:var(--text3);text-align:left;padding:6px 6px;border-bottom:1px solid var(--border);white-space:nowrap;background:var(--bg3);cursor:pointer;user-select:none}
 .tbl th:hover{color:var(--text)}
-.tbl td{padding:7px 10px;border-bottom:1px solid var(--border3);vertical-align:middle}
+.tbl td{padding:6px 6px;border-bottom:1px solid var(--border3);vertical-align:middle}
 .tbl tr:hover td{background:var(--bg3)}
-.col-fix{white-space:nowrap}
+.col-fix{white-space:nowrap;padding-left:6px;padding-right:6px}
 .col-wrap{white-space:normal;word-break:break-word;min-width:120px}
 .tbl tr.no-date td{opacity:.65}
 .tbl tr.nova-nevidena td{background:#fffbeb}
@@ -151,7 +151,7 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
       <div class="tbl-wrap">
         <table class="tbl">
           <thead><tr>
-            <th class="col-fix" style="color:var(--text4)">P.č.</th>
+            <th class="col-fix" style="color:var(--text4)" onclick="sortBy('poradCislo')" title="Zoradiť">P.č. ↕</th>
             <th class="col-fix" onclick="sortBy('evCislo')">Ev. číslo ↕</th>
             <th class="col-wrap" onclick="sortBy('objednavatel')">Objednávateľ ↕</th>
             <th class="col-wrap" onclick="sortBy('kontakt')">Kontakt</th>
@@ -577,7 +577,6 @@ window.renderTabulka=function(){
     const nevidena=o.osoba===currentOsoba&&!videli.includes(currentOsoba);
     const jeGroup=!!o.groupId;
     h+='<tr class="'+(o.termin?'':'no-date')+(nevidena?' nova-nevidena':'')+(jeGroup?' group-member':'')+'" data-id="'+o.id+'" onclick="handleRowClick(event,\''+o.id+'\')" style="cursor:pointer">';
-    h+='<td class="col-fix" style="color:var(--text4);font-size:11px">'+(o.poradCislo||'—')+'</td>';
     h+='<td class="col-fix" style="color:var(--text4);font-size:11px">'+(o.poradCislo||'—')+'</td>';
     h+='<td class="col-fix"><b>'+esc(o.evCislo||'—')+'</b>'+(nevidena?'<span class="badge-nova"></span>':'')+'</td>';
     h+='<td class="col-wrap">'+esc(o.objednavatel||'—')+'</td>';
