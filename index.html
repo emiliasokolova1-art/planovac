@@ -853,17 +853,30 @@ window.ulozitObjednavku=async function(){
   try{
     if(editId){
       const oldO=[...objednavky,...historia].find(x=>x.id===editId);
-      // Skontroluj či sa zmenil termin/cas/miesto a či je groupId
       const groupId=oldO?.groupId;
-      const terminZmeneny=(data.termin!==oldO?.termin||data.cas!==oldO?.cas||data.miesto!==oldO?.miesto);
-      if(isSef&&groupId&&terminZmeneny){
+      // Zisti ktoré zdieľané polia sa zmenili
+      const skupFields=['objednavatel','kontakt','mobil','mail','termin','cas','miesto'];
+      const zmenene={};
+      skupFields.forEach(f=>{
+        const newVal=data[f]||null;
+        const oldVal=oldO?.[f]||null;
+        if(newVal!==oldVal) zmenene[f]=newVal;
+      });
+      const niecoZmenene=Object.keys(zmenene).length>0;
+      if(isSef&&groupId&&niecoZmenene){
         const groupMembers=objednavky.filter(o=>o.groupId===groupId&&o.id!==editId);
         if(groupMembers.length){
-          pendingGroupData={termin:data.termin,cas:data.cas,miesto:data.miesto,objednavatel:data.objednavatel,kontakt:data.kontakt,mobil:data.mobil,mail:data.mail};
+          // uloz aktualnu objednavku
+          await updateDoc(doc(db,'objednavky',editId),data);
+          // priprav propagaciu len zmenených polí
+          pendingGroupData={...zmenene, updated:Date.now(), lastEditBy:currentOsoba, editNotifPotv:[]};
           pendingGroupIds=groupMembers.map(o=>o.id);
           const names=groupMembers.map(o=>'<b>'+esc(o.faktor||'?')+'</b> ('+esc(o.osoba||'?')+')').join(', ');
-          gi('group-info').innerHTML='Zmenili ste termín/čas/miesto. Súvisiace objednávky pre rovnakú zákazku: '+names+'<br><br>Chcete zmeniť termín/čas/miesto aj na nich?';
-          await updateDoc(doc(db,'objednavky',editId),data);
+          const zmeneneNazvy=Object.keys(zmenene).map(f=>({
+            objednavatel:'Objednávateľ',kontakt:'Kontakt',mobil:'Mobil',
+            mail:'Email',termin:'Termín',cas:'Čas',miesto:'Miesto'
+          }[f]||f)).join(', ');
+          gi('group-info').innerHTML='Zmenili ste: <b>'+zmeneneNazvy+'</b>.<br>Súvisiace objednávky: '+names+'<br><br>Chcete vykonať rovnaké zmeny aj na nich?';
           btn.disabled=false; btn.textContent='Uložiť';
           zatvorModal();
           gi('modal-group').style.display='flex';
