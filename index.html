@@ -810,7 +810,8 @@ window.ulozitADalsieFaktor=async function(){
     mail:gv('m-mail'), termin:gv('m-termin')||null, cas:gv('m-cas'),
     miesto:gv('m-miesto'), stav:gv('m-stav')
   };
-  const groupId=Date.now().toString(36)+Math.random().toString(36).slice(2);
+  const existingGroupId=gi('modal')?._groupId||null;
+  const groupId=existingGroupId||(Date.now().toString(36)+Math.random().toString(36).slice(2));
   const allSnapF=await getDocs(collection(db,'objednavky'));
   let maxPCF=0;
   allSnapF.forEach(d=>{ const pc=d.data().poradCislo||0; if(pc>maxPCF) maxPCF=pc; });
