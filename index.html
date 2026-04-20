@@ -964,12 +964,25 @@ window.exportCSV=function(tab){
   let d=[...data];
   if(fOs) d=d.filter(o=>o.osoba===fOs);
   if(fRok) d=d.filter(o=>o.termin&&o.termin.startsWith(fRok));
-  if(fS) d=d.filter(o=>[o.evCislo,o.objednavatel,o.kontakt,o.miesto].join(' ').toLowerCase().includes(fS));
+  if(fS) d=d.filter(o=>[o.evCislo,o.objednavatel,o.kontakt,o.miesto,o.poznamka].join(' ').toLowerCase().includes(fS));
   const hdr=['P.c.','GroupId','Ev.cislo','Objednavatel','Kontakt','Mobil','Email','Zodpovedny','Faktor','Termin','Cas','Miesto','Stav','Poznamka'];
-  const rows=d.map(o=>[o.poradCislo||'',o.groupId||'',o.evCislo,o.objednavatel,o.kontakt,o.mobil,o.mail,o.osoba,o.faktor,o.termin?formatDatum(o.termin):'',o.cas,o.miesto,o.stav,o.poznamka].map(v=>(v||'').replace(/;/g,',')).join(';'));
+  const rows=d.map(function(o){
+    return [
+      o.poradCislo||'', o.groupId||'', o.evCislo, o.objednavatel, o.kontakt,
+      o.mobil, o.mail, o.osoba, o.faktor,
+      o.termin?formatDatum(o.termin):'', o.cas, o.miesto, o.stav, o.poznamka
+    ].map(function(v){ return (v||'').toString().replace(/;/g,','); }).join(';');
+  });
   const csv='\uFEFF'+hdr.join(';')+'\n'+rows.join('\n');
-  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
-  a.download=(tab==='historia'?'historia':'objednavky')+'_export.csv'; a.click();
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=(tab==='historia'?'historia':'objednavky')+'_export.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 };
 
 window.importCSV=async function(event,tab){
