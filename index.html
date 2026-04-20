@@ -811,12 +811,15 @@ window.ulozitADalsieFaktor=async function(){
     miesto:gv('m-miesto'), stav:gv('m-stav')
   };
   const groupId=Date.now().toString(36)+Math.random().toString(36).slice(2);
+  const allSnapF=await getDocs(collection(db,'objednavky'));
+  let maxPCF=0;
+  allSnapF.forEach(d=>{ const pc=d.data().poradCislo||0; if(pc>maxPCF) maxPCF=pc; });
   const data={
     evCislo:'', objednavatel:prefill.objednavatel, kontakt:prefill.kontakt,
     mobil:prefill.mobil, mail:prefill.mail, osoba:gv('m-osoba'), faktor:gv('m-faktor'),
     termin:prefill.termin, cas:prefill.cas, miesto:prefill.miesto,
     stav:prefill.stav, poznamka:gv('m-poznamka'), groupId,
-    videli:[], created:Date.now(), updated:Date.now()
+    videli:[], poradCislo:maxPCF+1, created:Date.now(), updated:Date.now()
   };
   try{
     await addDoc(collection(db,'objednavky'),data);
@@ -872,8 +875,10 @@ window.ulozitObjednavku=async function(){
     } else {
       const gId=gi('modal')?._groupId||null;
       data.evCislo=gv('m-evcislo')||''; data.videli=[]; data.created=Date.now();
-      const allSnap=await getDocs(collection(db,'objednavky'));
-      data.poradCislo=allSnap.size+1;
+      const allSnap2=await getDocs(collection(db,'objednavky'));
+      let maxPC=0;
+      allSnap2.forEach(d=>{ const pc=d.data().poradCislo||0; if(pc>maxPC) maxPC=pc; });
+      data.poradCislo=maxPC+1;
       if(gId) data.groupId=gId;
       if(gi('modal')) gi('modal')._groupId=null;
       await addDoc(collection(db,'objednavky'),data);
