@@ -192,6 +192,7 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
       <div class="tbl-wrap">
         <table class="tbl">
           <thead><tr>
+            <th class="col-fix" style="color:var(--text4)">P.č.</th>
             <th class="col-fix">Ev. číslo</th>
             <th class="col-wrap">Objednávateľ</th>
             <th class="col-wrap">Kontakt</th>
@@ -618,6 +619,7 @@ window.renderHistoria=function(){
   data.forEach(o=>{
     const videli=o.videli||[];
     h+='<tr data-id="'+o.id+'" onclick="handleRowClickHist(event,\''+o.id+'\')" style="cursor:pointer">';
+    h+='<td class="col-fix" style="color:var(--text4);font-size:11px">'+(o.poradCislo||'—')+'</td>';
     h+='<td class="col-fix"><b>'+esc(o.evCislo||'—')+'</b></td>';
     h+='<td class="col-wrap">'+esc(o.objednavatel||'—')+'</td>';
     h+='<td class="col-wrap">'+esc(o.kontakt||'—')+'</td>';
@@ -1038,23 +1040,25 @@ window.importCSV=async function(event,tab){
 };
 
 // KOPÍROVANIE
-window.kopirovatObjednavku=function(id){
-  const o=objednavky.find(x=>x.id===id); if(!o) return;
-  editId=null;
-  gi('modal-title').textContent='Nová objednávka (kópia)';
-  gi('btn-ulozit-faktor').style.display=isSef?'':'none';
-  sv('m-evcislo',''); sv('m-obj',o.objednavatel||''); sv('m-kontakt',o.kontakt||'');
-  sv('m-mobil',o.mobil||''); sv('m-mail',o.mail||''); sv('m-termin',o.termin||'');
-  sv('m-miesto',o.miesto||''); sv('m-poznamka',o.poznamka||'');
-  sv('m-osoba',o.osoba||'Lenka'); sv('m-faktor',o.faktor||'PA'); sv('m-stav',o.stav||'objednané');
-  naplnCasy(); sv('m-cas',o.cas||'08:00');
-  gi('koliz-warn').style.display='none';
-  ['m-obj','m-kontakt','m-mobil','m-mail','m-termin','m-miesto','m-osoba','m-faktor','m-cas'].forEach(fid=>{
-    const el=gi(fid); if(!el) return;
-    el.disabled=false; el.style.opacity='1';
-  });
-  if(o.termin) checkKolizia();
-  gi('modal').style.display='flex';
+window.kopirovatObjednavku=async function(id){
+  const o=[...objednavky,...historia].find(x=>x.id===id); if(!o) return;
+  if(!confirm('Skopírovať objednávku ' + (o.evCislo||o.objednavatel||'?') + '?')) return;
+  const allSnap=await getDocs(collection(db,'objednavky'));
+  let maxPC=0;
+  allSnap.forEach(function(d){ const pc=d.data().poradCislo||0; if(pc>maxPC) maxPC=pc; });
+  const kopia={
+    evCislo:o.evCislo||'', objednavatel:o.objednavatel||'', kontakt:o.kontakt||'',
+    mobil:o.mobil||'', mail:o.mail||'', osoba:o.osoba||'', faktor:o.faktor||'',
+    termin:o.termin||null, cas:o.cas||'', miesto:o.miesto||'',
+    stav:o.stav||'objednane', poznamka:o.poznamka||'',
+    poradCislo:maxPC+1, videli:[], archiv:false,
+    created:Date.now(), updated:Date.now(),
+    lastEditBy:currentOsoba, editNotifPotv:[]
+  };
+  try{
+    await addDoc(collection(db,'objednavky'),kopia);
+    await nacitaj();
+  } catch(e){ alert('Chyba: '+e.message); }
 };
 
 // HROMADNÉ MAZANIE
