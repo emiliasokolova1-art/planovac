@@ -49,7 +49,9 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
 .tbl tr.no-date td{opacity:.65}
 .tbl tr.nova-nevidena td{background:#fffbeb}
 [data-theme="dark"] .tbl tr.nova-nevidena td{background:#2a2600}
-.tbl tr.group-member td:first-child{border-left:3px solid #93c5fd}
+.tbl tr.group-member td:first-child{border-left:4px solid var(--gc)}
+.gc0{--gc:#93c5fd}.gc1{--gc:#86efac}.gc2{--gc:#fca5a5}.gc3{--gc:#fcd34d}
+.gc4{--gc:#c4b5fd}.gc5{--gc:#f9a8d4}.gc6{--gc:#6ee7b7}.gc7{--gc:#fdba74}
 .os-Lenka{background:#e8f4fd;color:#1a6fa8;border-color:#b8d9f0}
 .os-Katka{background:#fde8f4;color:#a81a6f;border-color:#f0b8d9}
 .os-Emilia{background:#edf8e8;color:#2d7a1a;border-color:#bce8b0}
@@ -563,6 +565,13 @@ window.showSec=function(name){
 };
 
 // RENDER TABUĽKA
+function groupColorIdx(groupId){
+  if(!groupId) return -1;
+  // stable hash of groupId to 0-7
+  let h=0; for(let i=0;i<groupId.length;i++) h=(h*31+groupId.charCodeAt(i))&0xffff;
+  return h%8;
+}
+
 window.renderTabulka=function(){
   const fOs=gv('f-osoba'),fFak=gv('f-faktor'),fStav=gv('f-stav'),fRok=gv('f-rok'),fS=gv('f-search').toLowerCase();
   let data=[...objednavky];
@@ -577,7 +586,8 @@ window.renderTabulka=function(){
     const videli=o.videli||[];
     const nevidena=o.osoba===currentOsoba&&!videli.includes(currentOsoba);
     const jeGroup=!!o.groupId;
-    h+='<tr class="'+(o.termin?'':'no-date')+(nevidena?' nova-nevidena':'')+(jeGroup?' group-member':'')+'" data-id="'+o.id+'" onclick="handleRowClick(event,\''+o.id+'\')" style="cursor:pointer">';
+    const gcClass=jeGroup?' group-member gc'+groupColorIdx(o.groupId):'';
+    h+='<tr class="'+(o.termin?'':'no-date')+(nevidena?' nova-nevidena':'')+gcClass+'" data-id="'+o.id+'" onclick="handleRowClick(event,\''+o.id+'\')" style="cursor:pointer">';
     h+='<td class="col-fix" style="color:var(--text4);font-size:11px">'+(o.poradCislo||'—')+'</td>';
     h+='<td class="col-fix"><b>'+esc(o.evCislo||'—')+'</b>'+(nevidena?'<span class="badge-nova"></span>':'')+'</td>';
     h+='<td class="col-wrap">'+esc(o.objednavatel||'—')+'</td>';
@@ -618,7 +628,8 @@ window.renderHistoria=function(){
   let h='';
   data.forEach(o=>{
     const videli=o.videli||[];
-    h+='<tr data-id="'+o.id+'" onclick="handleRowClickHist(event,\''+o.id+'\')" style="cursor:pointer">';
+    const gcH=o.groupId?' group-member gc'+groupColorIdx(o.groupId):'';
+    h+='<tr class="'+gcH+'" data-id="'+o.id+'" onclick="handleRowClickHist(event,\''+o.id+'\')" style="cursor:pointer">';
     h+='<td class="col-fix" style="color:var(--text4);font-size:11px">'+(o.poradCislo||'—')+'</td>';
     h+='<td class="col-fix"><b>'+esc(o.evCislo||'—')+'</b></td>';
     h+='<td class="col-wrap">'+esc(o.objednavatel||'—')+'</td>';
@@ -1017,7 +1028,7 @@ window.importCSV=async function(event,tab){
   for(let i=1;i<lines.length;i++){
     const cols=lines[i].split(';').map(c=>c.replace(/^"|"$/g,'').replace(/""/g,'"').trim());
     const get=(n)=>cols[idx(n)]||'';
-    const terminRaw=get('Termín');
+    const terminRaw=get('Termin')||get('Termín');
     let termin='';
     if(terminRaw){ const p=terminRaw.split('.'); if(p.length===3) termin=p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0'); }
     const oldGroupId=get('GroupId');
