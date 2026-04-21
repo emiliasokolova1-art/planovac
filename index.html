@@ -567,19 +567,22 @@ window.showSec=function(name){
 // RENDER TABUĽKA
 const _gcMap={};
 let _gcNext=0;
+let _gcLast=-1;
 function groupColorIdx(groupId){
   if(!groupId) return -1;
   if(_gcMap[groupId]===undefined){
-    // assign next color, ensuring no two consecutive groups get same color
     let next=_gcNext%6;
+    // skip if same as last assigned color
+    if(next===_gcLast) { _gcNext++; next=_gcNext%6; }
     _gcMap[groupId]=next;
+    _gcLast=next;
     _gcNext++;
   }
   return _gcMap[groupId];
 }
 function resetGroupColors(){
   for(const k in _gcMap) delete _gcMap[k];
-  _gcNext=0;
+  _gcNext=0; _gcLast=-1;
 }
 
 window.renderTabulka=function(){
