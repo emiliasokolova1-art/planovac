@@ -392,7 +392,7 @@ let currentUser=null, currentOsoba='', isSef=false;
 let objednavky=[], historia=[];
 let editId=null, stavEditId=null, poznEditId=null;
 let kalRok=new Date().getFullYear(), kalMesiac=new Date().getMonth();
-let sortKol='termin', sortAsc=true;
+let sortKol='poradCislo', sortAsc=true;
 let osobnePozn={};
 let pendingGroupData=null, pendingGroupIds=[];
 
@@ -571,7 +571,7 @@ window.renderTabulka=function(){
   if(fStav) data=data.filter(o=>o.stav===fStav);
   if(fRok) data=data.filter(o=>o.termin&&o.termin.startsWith(fRok));
   if(fS) data=data.filter(o=>[o.evCislo,o.objednavatel,o.kontakt,o.miesto,o.poznamka].join(' ').toLowerCase().includes(fS));
-  data.sort((a,b)=>{ const av=a[sortKol]||'',bv=b[sortKol]||''; return sortAsc?(av>bv?1:-1):(av<bv?1:-1); });
+  data.sort((a,b)=>{ if(sortKol==='poradCislo') return sortAsc?((a.poradCislo||0)-(b.poradCislo||0)):((b.poradCislo||0)-(a.poradCislo||0)); const av=a[sortKol]||'',bv=b[sortKol]||''; return sortAsc?(av>bv?1:-1):(av<bv?1:-1); });
   let h='';
   data.forEach(o=>{
     const videli=o.videli||[];
@@ -614,7 +614,7 @@ window.renderHistoria=function(){
   if(fOs) data=data.filter(o=>o.osoba===fOs);
   if(fRok) data=data.filter(o=>o.termin&&o.termin.startsWith(fRok));
   if(fS) data=data.filter(o=>[o.evCislo,o.objednavatel,o.kontakt,o.miesto].join(' ').toLowerCase().includes(fS));
-  data.sort((a,b)=>(a.termin||'')>(b.termin||'')?-1:1);
+  data.sort((a,b)=>((a.poradCislo||0)-(b.poradCislo||0)));
   let h='';
   data.forEach(o=>{
     const videli=o.videli||[];
@@ -655,7 +655,7 @@ window.renderMoje=function(){
   let data=objednavky.filter(o=>o.osoba===currentOsoba);
   if(fStav) data=data.filter(o=>o.stav===fStav);
   if(fRok) data=data.filter(o=>o.termin&&o.termin.startsWith(fRok));
-  data.sort((a,b)=>(a.termin||'zzz')>(b.termin||'zzz')?1:-1);
+  data.sort((a,b)=>((a.poradCislo||0)-(b.poradCislo||0)));
   let h='';
   data.forEach(o=>{
     const pz=osobnePozn[o.id]||'';
@@ -1023,18 +1023,20 @@ window.importCSV=async function(event,tab){
     const oldGroupId=get('GroupId');
     let newGroupId=null;
     if(oldGroupId){ if(!groupMap[oldGroupId]) groupMap[oldGroupId]='grp'+Date.now()+Math.random().toString(36).slice(2,6); newGroupId=groupMap[oldGroupId]; }
+    const pcRaw=get('P.c.')||get('P.c');
     const data={
       evCislo:get('Ev.cislo')||get('Ev.číslo'), objednavatel:get('Objednavatel')||get('Objednávateľ'), kontakt:get('Kontakt'),
       mobil:get('Mobil'), mail:get('Email'), osoba:get('Zodpovedny')||get('Zodpovedný'), faktor:get('Faktor'),
       termin:termin||null, cas:get('Cas')||get('Čas'), miesto:get('Miesto'),
       stav:get('Stav')||'objednané', poznamka:get('Poznamka')||get('Poznámka'),
-      groupId:newGroupId, archiv:tab==='historia', videli:[], created:Date.now()+(i*100), updated:Date.now()
+      groupId:newGroupId, archiv:tab==='historia', videli:[],
+      poradCislo:pcRaw?parseInt(pcRaw):null,
+      created:Date.now()+(i*100), updated:Date.now()
     };
     await addDoc(collection(db,'objednavky'),data);
     count++;
   }
   event.target.value='';
-  await prepocitajPoradie();
   alert('Importovaných: '+count+' záznamov');
   await nacitaj();
 };
