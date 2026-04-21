@@ -49,9 +49,9 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
 .tbl tr.no-date td{opacity:.65}
 .tbl tr.nova-nevidena td{background:#fffbeb}
 [data-theme="dark"] .tbl tr.nova-nevidena td{background:#2a2600}
-.tbl tr.group-member td:first-child{border-left:4px solid var(--gc)}
-.gc0{--gc:#93c5fd}.gc1{--gc:#86efac}.gc2{--gc:#fca5a5}.gc3{--gc:#fcd34d}
-.gc4{--gc:#c4b5fd}.gc5{--gc:#f9a8d4}.gc6{--gc:#6ee7b7}.gc7{--gc:#fdba74}
+.tbl tr.group-member td:first-child{border-left:2px solid var(--gc)}
+.gc0{--gc:#2563eb}.gc1{--gc:#16a34a}.gc2{--gc:#dc2626}.gc3{--gc:#d97706}
+.gc4{--gc:#9333ea}.gc5{--gc:#0891b2}
 .os-Lenka{background:#e8f4fd;color:#1a6fa8;border-color:#b8d9f0}
 .os-Katka{background:#fde8f4;color:#a81a6f;border-color:#f0b8d9}
 .os-Emilia{background:#edf8e8;color:#2d7a1a;border-color:#bce8b0}
@@ -569,7 +569,7 @@ function groupColorIdx(groupId){
   if(!groupId) return -1;
   // stable hash of groupId to 0-7
   let h=0; for(let i=0;i<groupId.length;i++) h=(h*31+groupId.charCodeAt(i))&0xffff;
-  return h%8;
+  return h%6;
 }
 
 window.renderTabulka=function(){
