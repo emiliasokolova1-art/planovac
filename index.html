@@ -52,11 +52,11 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
 .tbl tr.group-member td:first-child{border-left:2px solid var(--gc)}
 .gc0{--gc:#2563eb}.gc1{--gc:#ca8a04}.gc2{--gc:#dc2626}.gc3{--gc:#d97706}
 .gc4{--gc:#9333ea}.gc5{--gc:#0891b2}
-.os-Lenka{background:#fff3e0;color:#c05a00;border-color:#ffcc80}
-.os-Katka{background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7}
-.os-Emilia{background:#fce4ec;color:#c2185b;border-color:#f48fb1}
-.os-Veducky{background:#e3f2fd;color:#1565c0;border-color:#90caf9}
-.os-Andrej{background:#f5f5f5;color:#546e7a;border-color:#b0bec5}
+.os-Lenka{background:#fde68a;color:#78350f;border-color:#f59e0b}
+.os-Katka{background:#ecfccb;color:#365314;border-color:#a3e635}
+.os-Emilia{background:#fce7f3;color:#be185d;border-color:#f9a8d4}
+.os-Veducky{background:#bfdbfe;color:#1d4ed8;border-color:#60a5fa}
+.os-Andrej{background:#ccfbf1;color:#0f766e;border-color:#5eead4}
 .chip-os{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;border:1px solid transparent}
 .stav-objednane{background:#e6f1fb;color:#185fa5}
 .stav-odmerane{background:#eaf3de;color:#3b6d11}
@@ -312,7 +312,7 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
     <div class="field" style="margin-bottom:12px"><label>Poznámka</label><textarea id="m-poznamka" placeholder="Popis merania, špeciálne požiadavky..."></textarea></div>
     <div class="modal-actions">
       <button class="btn" onclick="zatvorModal()">Zrušiť</button>
-      <button class="btn" id="btn-hotovo-skupina" style="display:none" onclick="zatvorModal()">✓ Dokončiť skupinu</button>
+      <button class="btn" id="btn-spat-skupina" style="display:none" onclick="spatNaPrvuObjednavku()">← Späť</button>
       <button class="btn btn-success" id="btn-ulozit-faktor" style="display:none" onclick="ulozitADalsieFaktor()">Uložiť a pridať ďalší faktor</button>
       <button class="btn btn-primary" id="modal-save-btn" onclick="ulozitObjednavku()">Uložiť</button>
     </div>
@@ -784,7 +784,7 @@ window.otvorModal=function(prefill){
   editId=null;
   gi('modal-title').textContent='Nová objednávka';
   gi('btn-ulozit-faktor').style.display=isSef?'':'none';
-  gi('btn-hotovo-skupina').style.display='none';
+  gi('btn-spat-skupina').style.display='none';
   ['m-obj','m-kontakt','m-mobil','m-mail','m-miesto','m-poznamka','m-evcislo'].forEach(id=>{const e=gi(id);if(e)e.value='';}); sv('m-termin-text',''); sv('m-termin-date','');
   gi('m-stav').value='objednané'; gi('m-osoba').value='Lenka'; gi('m-faktor').value='PA';
   naplnCasy(); gi('m-cas').value='08:00';
@@ -866,7 +866,7 @@ window.ulozitADalsieFaktor=async function(){
     // Otvor nový modal s predvyplnenými údajmi a rovnakým groupId
     prefill.groupId=groupId;
     zatvorModal();
-    setTimeout(()=>{ otvorModal(prefill); gi('modal')._groupId=groupId; gi('btn-hotovo-skupina').style.display=''; },100);
+    setTimeout(()=>{ otvorModal(prefill); gi('modal')._groupId=groupId; gi('btn-spat-skupina').style.display=''; },100);
   } catch(e){ alert('Chyba: '+e.message); btn.disabled=false; btn.textContent='Uložiť a pridať ďalší faktor'; }
 };
 
@@ -1274,10 +1274,16 @@ function checkKoliziaVal(isoDate){
 // HELPERS
 function extractMesto(miesto){
   if(!miesto) return '';
-  // find last sequence of digits (PSC), return everything after it
-  const match=miesto.match(/\d+\s+(.+)$/);
-  if(match) return match[1].trim();
-  // fallback: last word(s) after last comma
+  // Match Slovak PSC pattern with space: "034 01 Mesto"
+  const psc=miesto.match(/\d{3}\s\d{2}\s+(.+)$/);
+  if(psc) return psc[1].trim();
+  // Match PSC without space: "03401 Mesto" or "04017 Mesto"
+  const pscNoSpace=miesto.match(/\d{5}\s+(.+)$/);
+  if(pscNoSpace) return pscNoSpace[1].trim();
+  // fallback: 4+ digit number followed by space and text
+  const digits=miesto.match(/\d{4,}\s+(.+)$/);
+  if(digits) return digits[1].trim();
+  // last fallback: text after last comma
   const parts=miesto.split(',');
   return parts[parts.length-1].trim();
 }
