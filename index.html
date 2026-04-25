@@ -281,7 +281,6 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
       <div class="field"><label>Stav</label>
         <select id="m-stav"><option>objednané</option><option>odmerané</option><option>domerať</option><option>čaká sa na podklady</option><option>vypracované - neschválené</option><option>vypracované - schválené</option><option>čaká sa na platbu</option><option>odovzdané</option></select>
       </div>
-      <div class="field" id="evcislo-field"><label>Evidenčné číslo</label><input id="m-evcislo" placeholder="napr. PA-46/2025"></div>
     </div>
     <div class="grid2" style="gap:12px;margin-bottom:12px">
       <div class="field"><label>Objednávateľ / firma</label><input id="m-obj" placeholder="Názov firmy"></div>
@@ -486,7 +485,6 @@ function renderFaktoryTabs(){
     ch+='<option value="" disabled'+(f.faktor?'':' selected')+'>Vyber faktor</option>';
     FAKTORY.forEach(fk=>{ ch+='<option'+(f.faktor===fk?' selected':'')+'>'+fk+'</option>'; });
     ch+='</select></div></div>';
-    ch+='<div class="field" style="margin-bottom:8px"><label>Evidenčné číslo</label><input id="ft-evcislo-'+i+'" value="'+esc(f.evcislo||'')+'" placeholder="napr. PA-46/2025" oninput="updateFaktorTab('+i+')"></div>';
     ch+='<div class="field"><label>Poznámka</label><textarea id="ft-poznamka-'+i+'" oninput="updateFaktorTab('+i+')" placeholder="Popis merania...">'+esc(f.poznamka||'')+'</textarea></div>';
     ch+='</div>';
   });
