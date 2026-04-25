@@ -1016,7 +1016,6 @@ function updateSelectionUI(){
   const btn=gi('btn-hromadne-vymaz'); if(btn) btn.style.display=selectedIds.size>0?'':'none';
   const lbl=gi('sel-count'); if(lbl) lbl.textContent=selectedIds.size>0?'('+selectedIds.size+' označených)':'';
 }
-let clickTimer=null;
 window.handleRowClick=function(e,id){
   if(e.target.tagName==='BUTTON'||e.target.tagName==='INPUT') return;
   if(!isSef){ otvorDetail(id); return; }
