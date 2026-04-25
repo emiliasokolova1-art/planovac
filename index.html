@@ -296,9 +296,10 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
     <!-- Riadok 4: Termín + Čas -->
     <div class="grid2" style="gap:12px;margin-bottom:12px">
       <div class="field"><label>Termín (nepovinné)</label>
-        <div style="display:flex;gap:4px;align-items:center">
+        <div style="display:flex;align-items:center;gap:6px">
           <input type="text" id="m-termin-text" placeholder="napr. máj 2026" style="flex:1" oninput="syncTermin(this.value)">
-          <input type="date" id="m-termin-date" onchange="syncTerminFromDate(this.value)" style="width:36px;padding:0 4px;cursor:pointer" title="Vybrať dátum">
+          <span style="font-size:11px;color:var(--text3);white-space:nowrap">alebo</span>
+          <input type="date" id="m-termin-date" onchange="syncTerminFromDate(this.value)" style="width:130px;padding:0 6px;cursor:pointer" title="Vybrať dátum">
         </div>
       </div>
       <div class="field"><label>Čas merania</label><select id="m-cas"><option value="">—</option></select></div>
