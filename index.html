@@ -938,11 +938,11 @@ window.vymazObjednavku=async function(id){
   await prepocitajPoradie(); await nacitaj();
 };
 
-async function presunutDoHistorie(id){
+window.presunutDoHistorie=async function(id){
   if(!confirm('Presunúť do histórie?')) return;
   await updateDoc(doc(db,'objednavky',id),{archiv:true,stav:'odovzdané',updated:Date.now()});
   zatvorDetail(); await nacitaj();
-}
+};
 
 async function prepocitajPoradie(){
   const snap=await getDocs(collection(db,'objednavky'));
