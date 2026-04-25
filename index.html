@@ -276,21 +276,25 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
   <div class="modal">
     <div class="modal-title" id="modal-title">Nová objednávka</div>
     <div id="koliz-warn" class="koliz-warn" style="display:none"></div>
-    <!-- Spoločné polia -->
+    <!-- Riadok 1: Stav + Objednávateľ -->
     <div class="grid2" style="gap:12px;margin-bottom:12px">
       <div class="field"><label>Stav</label>
         <select id="m-stav"><option>objednané</option><option>odmerané</option><option>domerať</option><option>čaká sa na podklady</option><option>vypracované - neschválené</option><option>vypracované - schválené</option><option>čaká sa na platbu</option><option>odovzdané</option></select>
       </div>
-    </div>
-    <div class="grid2" style="gap:12px;margin-bottom:12px">
       <div class="field"><label>Objednávateľ / firma</label><input id="m-obj" placeholder="Názov firmy"></div>
-      <div class="field"><label>Kontaktná osoba</label><input id="m-kontakt" placeholder="Meno priezvisko"></div>
     </div>
-    <div class="grid2" style="gap:12px;margin-bottom:12px">
+    <!-- Riadok 2: Kontakt, Mobil, Email -->
+    <div class="grid3" style="gap:12px;margin-bottom:12px">
+      <div class="field"><label>Kontaktná osoba</label><input id="m-kontakt" placeholder="Meno priezvisko"></div>
       <div class="field"><label>Mobil</label><input id="m-mobil" placeholder="+421 9xx xxx xxx"></div>
       <div class="field"><label>Email</label><input id="m-mail" type="email" placeholder="kontakt@firma.sk"></div>
     </div>
-    <div class="grid3" style="gap:12px;margin-bottom:12px">
+    <!-- Riadok 3: Adresa -->
+    <div class="field" style="margin-bottom:12px">
+      <label>Miesto / Adresa</label><input id="m-miesto" placeholder="Adresa prevádzky">
+    </div>
+    <!-- Riadok 4: Termín + Čas -->
+    <div class="grid2" style="gap:12px;margin-bottom:12px">
       <div class="field"><label>Termín (nepovinné)</label>
         <div style="display:flex;gap:4px;align-items:center">
           <input type="text" id="m-termin-text" placeholder="napr. máj 2026" style="flex:1" oninput="syncTermin(this.value)">
@@ -298,7 +302,6 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
         </div>
       </div>
       <div class="field"><label>Čas merania</label><select id="m-cas"><option value="">—</option></select></div>
-      <div class="field"><label>Miesto / Adresa</label><input id="m-miesto" placeholder="Adresa prevádzky"></div>
     </div>
     <!-- Záložky faktorov (len pri novej objednávke) -->
     <div id="ftab-wrapper" style="display:none">
