@@ -829,14 +829,35 @@ window.editObjednavku=function(id){
   gi('modal').style.display='flex';
 };
 
-window.checkKolizia=function(){
-  const termin=gv('m-termin'); if(!termin){ gi('koliz-warn').style.display='none'; return; }
-  const koliz=objednavky.filter(o=>o.termin===termin&&o.id!==editId);
-  const warn=gi('koliz-warn');
-  if(koliz.length){
-    warn.style.display='block';
-    warn.innerHTML='⚠️ V tento deň je naplánované meranie: '+koliz.map(o=>'<b>'+esc(o.osoba||'?')+'</b>: '+esc(o.evCislo||o.objednavatel||'?')).join(', ');
-  } else { warn.style.display='none'; }
+window.checkKolizia=function(){ checkKoliziaVal(getTerminValue()); };
+
+window.spatNaPrvuObjednavku=async function(){
+  // lastSavedId = id prvého (posledného uloženého) faktora v tejto skupne
+  const lastId=gi('modal')?._lastSavedId;
+  const gId=gi('modal')?._groupId;
+  if(!lastId){ zatvorModal(); return; }
+  // Vymazať prvý uložený faktor z databázy
+  await deleteDoc(doc(db,'objednavky',lastId));
+  await prepocitajPoradie();
+  await nacitaj();
+  // Otvor nový prázdny formulár (nič nie je uložené, skupina zrušená)
+  gi('modal')._groupId=null;
+  gi('modal')._lastSavedId=null;
+  // Otvoriť formulár novej objednávky - ale predvyplniť údajmi z vymazaného záznamu
+  const vymazany=[...objednavky,...historia].find(x=>x.id===lastId);
+  // keďže sme ho vymazali, potrebujeme dáta z aktuálneho formulára
+  const prefillBack={
+    objednavatel:gv('m-obj'), kontakt:gv('m-kontakt'), mobil:gv('m-mobil'),
+    mail:gv('m-mail'), termin:gi('m-termin-date')?gi('m-termin-date').value:null,
+    terminText:gv('m-termin-text'), cas:gv('m-cas'), miesto:gv('m-miesto'),
+    stav:gv('m-stav'), osoba:gv('m-osoba')
+  };
+  zatvorModal();
+  setTimeout(()=>{
+    otvorModal(prefillBack);
+    gi('btn-spat-skupina').style.display='none';
+    gi('btn-ulozit-faktor').style.display='';
+  },100);
 };
 
 // ULOŽIŤ A PRIDAŤ ĎALŠÍ FAKTOR
@@ -861,12 +882,12 @@ window.ulozitADalsieFaktor=async function(){
     videli:[], poradCislo:maxPCF+1, created:Date.now(), updated:Date.now()
   };
   try{
-    await addDoc(collection(db,'objednavky'),data);
+    const newRef=await addDoc(collection(db,'objednavky'),data);
     btn.disabled=false; btn.textContent='Uložiť a pridať ďalší faktor';
     // Otvor nový modal s predvyplnenými údajmi a rovnakým groupId
     prefill.groupId=groupId;
     zatvorModal();
-    setTimeout(()=>{ otvorModal(prefill); gi('modal')._groupId=groupId; gi('btn-spat-skupina').style.display=''; },100);
+    setTimeout(()=>{ otvorModal(prefill); gi('modal')._groupId=groupId; gi('modal')._lastSavedId=newRef.id; gi('btn-spat-skupina').style.display=''; },100);
   } catch(e){ alert('Chyba: '+e.message); btn.disabled=false; btn.textContent='Uložiť a pridať ďalší faktor'; }
 };
 
