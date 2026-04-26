@@ -844,7 +844,7 @@ window.editObjednavku=function(id){
   const tText=o.terminText||(o.termin?(function(v){const p=v.split('-');return p[2]+'.'+p[1]+'.'+p[0];})(o.termin):'');
   sv('m-termin-text',tText);
   sv('m-miesto',o.miesto||''); sv('m-stav',o.stav||'objednané');
-  naplnCasy(o.cas||'08:00'); sv('m-cas',o.cas||'08:00');
+  naplnCasy(o.cas||''); sv('m-cas',o.cas||'');
   sv('m-osoba',o.osoba||''); sv('m-faktor',o.faktor||'');
   const poz=gi('m-poznamka'); if(poz) poz.value=o.poznamka||'';
   gi('koliz-warn').style.display='none';
