@@ -315,6 +315,7 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
     </div>
     <!-- Polia faktora (len pri editácii) -->
     <div id="edit-faktor-wrapper">
+      <div class="field" style="margin-bottom:12px"><label>Evidenčné číslo</label><input id="m-evcislo" placeholder="napr. PA-46/2025"></div>
       <div class="grid2" style="gap:12px;margin-bottom:12px">
         <div class="field"><label>Zodpovedný za Brenner AMS</label>
           <select id="m-osoba"><option value="" disabled selected>Vyber zamestnanca</option><option>Lenka</option><option>Katka</option><option>Emilia</option><option>Veducky</option><option>Andrej</option></select>
@@ -806,7 +807,7 @@ window.renderKalendar=function(){
 window.otvorModal=function(){
   editId=null;
   gi('modal-title').textContent='Nová objednávka';
-  ['m-obj','m-kontakt','m-mobil','m-mail','m-miesto','m-evcislo'].forEach(id=>{const e=gi(id);if(e)e.value='';});
+  ['m-obj','m-kontakt','m-mobil','m-mail','m-miesto'].forEach(id=>{const e=gi(id);if(e)e.value='';})
   sv('m-termin-text',''); sv('m-termin-date','');
   gi('m-stav').value='objednané';
   naplnCasy(''); sv('m-cas','');
@@ -1098,10 +1099,11 @@ window.exportCSV=function(tab){
   if(fRok) d=d.filter(o=>o.termin&&o.termin.startsWith(fRok));
   if(fS) d=d.filter(o=>[o.evCislo,o.objednavatel,o.kontakt,o.miesto,o.poznamka].join(' ').toLowerCase().includes(fS));
   const hdr=['P.c.','GroupId','Ev.cislo','Objednavatel','Kontakt','Mobil','Email','Zodpovedny','Faktor','Termin','Cas','Miesto','Stav','Poznamka'];
+  function q(v){ return '"'+(v||'').toString().replace(/"/g,'""')+'"'; }
   const rows=d.map(function(o){
-    return [o.poradCislo||'',o.groupId||'',o.evCislo,o.objednavatel,o.kontakt,o.mobil,o.mail,o.osoba,o.faktor,o.termin?formatDatum(o.termin):'',o.cas,o.miesto,o.stav,o.poznamka].map(function(v){ return (v||'').toString().replace(/;/g,','); }).join(';');
+    return [o.poradCislo||'',o.groupId||'',o.evCislo,o.objednavatel,o.kontakt,o.mobil,o.mail,o.osoba,o.faktor,o.termin?formatDatum(o.termin):'',o.cas,o.miesto,o.stav,o.poznamka].map(q).join(';');
   });
-  const csv='\uFEFF'+hdr.join(';')+'\n'+rows.join('\n');
+  const csv='\uFEFF'+hdr.map(q).join(';')+'\n'+rows.join('\n');
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a'); a.href=url;
@@ -1113,12 +1115,22 @@ window.importCSV=async function(event,tab){
   const text=await file.text();
   const lines=text.split('\n').filter(l=>l.trim());
   if(lines.length<2){ alert('CSV je prázdne'); return; }
-  const hdr=lines[0].split(';').map(h=>h.replace(/^"|"$/g,'').trim());
+  function parseCSVLine(line){
+    const result=[]; let cur='', inQ=false;
+    for(let i=0;i<line.length;i++){
+      const ch=line[i];
+      if(ch==='"'){ if(inQ&&line[i+1]==='"'){ cur+='"'; i++; } else inQ=!inQ; }
+      else if(ch===';'&&!inQ){ result.push(cur); cur=''; }
+      else cur+=ch;
+    }
+    result.push(cur); return result;
+  }
+  const hdr=parseCSVLine(lines[0]).map(h=>h.trim());
   const idx=n=>hdr.findIndex(h=>h===n);
-  const get=(cols,n)=>(cols[idx(n)]||'').replace(/^"|"$/g,'').replace(/""/g,'"').trim();
+  const get=(cols,n)=>(cols[idx(n)]||'').trim();
   let count=0; const groupMap={}; let grpCounter=0;
   for(let i=1;i<lines.length;i++){
-    const cols=lines[i].split(';');
+    const cols=parseCSVLine(lines[i]);
     const terminRaw=get(cols,'Termin')||get(cols,'Termín');
     let termin='';
     if(terminRaw){ const p=terminRaw.split('.'); if(p.length===3) termin=p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0'); }
