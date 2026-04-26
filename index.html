@@ -809,7 +809,7 @@ window.otvorModal=function(){
   ['m-obj','m-kontakt','m-mobil','m-mail','m-miesto','m-evcislo'].forEach(id=>{const e=gi(id);if(e)e.value='';});
   sv('m-termin-text',''); sv('m-termin-date','');
   gi('m-stav').value='objednané';
-  naplnCasy('08:00'); sv('m-cas','08:00');
+  naplnCasy(''); sv('m-cas','');
   gi('koliz-warn').style.display='none';
   // Show tab system for new, hide for edit
   gi('ftab-wrapper').style.display='';
