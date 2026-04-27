@@ -294,21 +294,20 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
       <label>Miesto / Adresa</label><input id="m-miesto" placeholder="Adresa prevádzky">
     </div>
     <!-- Riadok 4: Termín + Čas -->
-    <div class="grid2" style="gap:12px;margin-bottom:12px">
-      <div class="field"><label>Termín Od</label>
+    <div class="grid2" style="gap:12px;margin-bottom:2px">
+      <div class="field"><label>Termín merania</label>
         <div style="display:flex;align-items:center;gap:4px">
           <input type="text" id="m-termin-text" placeholder="napr. máj 2026" style="flex:1" oninput="syncTermin(this.value)">
-          <input type="date" id="m-termin-date" onchange="syncTerminFromDate(this.value)" style="width:130px;padding:0 6px;cursor:pointer" title="Vybrať dátum Od">
+          <input type="date" id="m-termin-date" onchange="syncTerminFromDate(this.value)" style="width:130px;padding:0 6px;cursor:pointer" title="Vybrať dátum">
         </div>
       </div>
       <div class="field"><label>Čas merania</label><select id="m-cas"><option value="">—</option></select></div>
     </div>
     <div class="grid2" style="gap:12px;margin-bottom:12px">
-      <div class="field"><label>Termín Do</label>
-        <div style="display:flex;align-items:center;gap:4px">
-          <input type="text" id="m-termin-do-text" placeholder="napr. máj 2026" style="flex:1" oninput="syncTerminDo(this.value)">
-          <input type="date" id="m-termin-do-date" onchange="syncTerminDoFromDate(this.value)" style="width:130px;padding:0 6px;cursor:pointer" title="Vybrať dátum Do">
-        </div>
+      <div style="display:flex;align-items:center;gap:4px;margin-top:2px">
+        <label style="font-size:11px;color:var(--text3);white-space:nowrap;min-width:22px">Do:</label>
+        <input type="text" id="m-termin-do-text" placeholder="napr. máj 2026" style="flex:1;height:28px;padding:0 8px;border:1px solid var(--input-border);border-radius:8px;background:var(--bg3);color:var(--text2);font-size:12px;font-family:inherit" oninput="syncTerminDo(this.value)">
+        <input type="date" id="m-termin-do-date" onchange="syncTerminDoFromDate(this.value)" style="width:130px;height:28px;padding:0 6px;border:1px solid var(--input-border);border-radius:8px;background:var(--bg3);color:var(--text2);font-size:12px;cursor:pointer" title="Vybrať dátum Do">
       </div>
       <div></div>
     </div>
@@ -454,14 +453,15 @@ function naplnCasy(val){
 function syncTermin(val){
   const d1=val.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
   const d2=val.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if(d1){ const iso=d1[3]+'-'+d1[2].padStart(2,'0')+'-'+d1[1].padStart(2,'0'); gi('m-termin-date').value=iso; checkKoliziaVal(iso); }
-  else if(d2){ gi('m-termin-date').value=val; checkKoliziaVal(val); }
-  else { gi('m-termin-date').value=''; checkKoliziaVal(''); }
+  if(d1){ gi('m-termin-date').value=d1[3]+'-'+d1[2].padStart(2,'0')+'-'+d1[1].padStart(2,'0'); }
+  else if(d2){ gi('m-termin-date').value=val; }
+  else { gi('m-termin-date').value=''; }
+  checkKoliziaRange();
 }
 window.syncTermin=syncTermin;
 window.syncTerminFromDate=function(val){
   if(val){ const p=val.split('-'); gi('m-termin-text').value=p[2]+'.'+p[1]+'.'+p[0]; }
-  checkKoliziaVal(val);
+  checkKoliziaRange();
 };
 function syncTerminDo(val){
   const d1=val.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
@@ -470,9 +470,17 @@ function syncTerminDo(val){
   else if(d2){ gi('m-termin-do-date').value=val; }
   else { gi('m-termin-do-date').value=''; }
 }
-window.syncTerminDo=syncTerminDo;
+window.syncTerminDo=function(val){
+  const d1=val.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+  const d2=val.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(d1){ gi('m-termin-do-date').value=d1[3]+'-'+d1[2].padStart(2,'0')+'-'+d1[1].padStart(2,'0'); }
+  else if(d2){ gi('m-termin-do-date').value=val; }
+  else { gi('m-termin-do-date').value=''; }
+  checkKoliziaRange();
+};
 window.syncTerminDoFromDate=function(val){
   if(val){ const p=val.split('-'); gi('m-termin-do-text').value=p[2]+'.'+p[1]+'.'+p[0]; }
+  checkKoliziaRange();
 };
 function getTerminValue(){ return gi('m-termin-date')?gi('m-termin-date').value||null:null; }
 function getTerminDoValue(){ return gi('m-termin-do-date')?gi('m-termin-do-date').value||null:null; }
@@ -485,7 +493,28 @@ function checkKoliziaVal(isoDate){
   if(koliz.length){ warn.style.display='block'; warn.innerHTML='⚠️ V tento deň je naplánované meranie: '+koliz.map(o=>'<b>'+esc(o.osoba||'?')+'</b>: '+esc(o.evCislo||o.objednavatel||'?')).join(', '); }
   else warn.style.display='none';
 }
-window.checkKolizia=function(){ checkKoliziaVal(getTerminValue()); };
+function checkKoliziaRange(){
+  const od=getTerminValue(), doD=getTerminDoValue();
+  if(!od){ gi('koliz-warn').style.display='none'; return; }
+  // collect all dates in range
+  const dates=[od];
+  if(doD&&doD>od){
+    let d=new Date(od); const end=new Date(doD);
+    d.setDate(d.getDate()+1);
+    while(d<=end){ dates.push(d.toISOString().slice(0,10)); d.setDate(d.getDate()+1); }
+  }
+  const koliz=objednavky.filter(o=>{
+    if(o.id===editId) return false;
+    if(!o.termin) return false;
+    // check if any date in our range overlaps with this objednavka's range
+    const oOd=o.termin, oDo=o.terminDo||o.termin;
+    return dates.some(d=>d>=oOd&&d<=oDo);
+  });
+  const warn=gi('koliz-warn');
+  if(koliz.length){ warn.style.display='block'; warn.innerHTML='⚠️ V tieto dni je naplánované meranie: '+koliz.map(o=>'<b>'+esc(o.osoba||'?')+'</b>: '+esc(o.evCislo||o.objednavatel||'?')).join(', '); }
+  else warn.style.display='none'
+}
+window.checkKolizia=function(){ checkKoliziaRange(); };
 
 // ── ZÁLOŽKOVÝ SYSTÉM FAKTOROV ──────────────────────────────
 function renderFaktoryTabs(){
@@ -1030,7 +1059,7 @@ window.otvorDetail=function(id){
   gi('det-title').textContent=(o.evCislo||'Objednávka')+' — '+esc(o.objednavatel||'');
   const pz=osobnePozn[o.id]||'';
   const terminDisp=o.termin?formatDatum(o.termin):(o.terminText?o.terminText:'<span style="color:var(--text4)">bez dátumu</span>');
-  const pols=[['Ev. číslo',esc(o.evCislo||'—')],['Stav','<span class="chip-stav '+stavClass(o.stav)+'">'+esc(o.stav||'—')+'</span>'],['Objednávateľ',esc(o.objednavatel||'—')],['Kontaktná osoba',esc(o.kontakt||'—')],['Mobil',esc(o.mobil||'—')],['Email',esc(o.mail||'—')],['Zodpovedný','<span class="chip-os os-'+esc(o.osoba||'')+'">'+esc(o.osoba||'—')+'</span>'],['Faktor','<span class="chip-faktor">'+esc(o.faktor||'—')+'</span>'],['Termín',terminDisp],['Čas',esc(o.cas||'—')],['Miesto',esc(o.miesto||'—')],['Poznámka',esc(o.poznamka||'—')],['Moja poznámka',esc(pz||'—')],['Videli',(o.videli||[]).join(', ')||'—'],['Naposledy upravil',esc(o.lastEditBy||'—')]];
+  const pols=[['Ev. číslo',esc(o.evCislo||'—')],['Stav','<span class="chip-stav '+stavClass(o.stav)+'">'+esc(o.stav||'—')+'</span>'],['Objednávateľ',esc(o.objednavatel||'—')],['Kontaktná osoba',esc(o.kontakt||'—')],['Mobil',esc(o.mobil||'—')],['Email',esc(o.mail||'—')],['Zodpovedný','<span class="chip-os os-'+esc(o.osoba||'')+'">'+esc(o.osoba||'—')+'</span>'],['Faktor','<span class="chip-faktor">'+esc(o.faktor||'—')+'</span>'],['Termín',terminDisp],['Termín Do',o.terminDo?formatDatum(o.terminDo):(o.terminDoText?esc(o.terminDoText):'—')],['Čas',esc(o.cas||'—')],['Miesto',esc(o.miesto||'—')],['Poznámka',esc(o.poznamka||'—')],['Moja poznámka',esc(pz||'—')],['Videli',(o.videli||[]).join(', ')||'—'],['Naposledy upravil',esc(o.lastEditBy||'—')]];
   let h='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px">';
   pols.forEach(([k,v])=>{ h+='<div style="padding:6px 0;border-bottom:1px solid var(--border3)"><div style="font-size:11px;color:var(--text3)">'+k+'</div><div>'+v+'</div></div>'; });
   h+='</div>';
