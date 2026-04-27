@@ -999,7 +999,7 @@ window.kopirovatObjednavku=async function(id){
   if(!confirm('Skopírovať objednávku '+(o.evCislo||o.objednavatel||'?')+'?')) return;
   const allSnap=await getDocs(collection(db,'objednavky'));
   let maxPC=0; allSnap.forEach(d=>{ const pc=d.data().poradCislo||0; if(pc>maxPC) maxPC=pc; });
-  const kopia={evCislo:o.evCislo||'',objednavatel:o.objednavatel||'',kontakt:o.kontakt||'',mobil:o.mobil||'',mail:o.mail||'',osoba:o.osoba||'',faktor:o.faktor||'',termin:o.termin||null,terminText:o.terminText||'',cas:o.cas||'',miesto:o.miesto||'',stav:o.stav||'objednané',poznamka:o.poznamka||'',poradCislo:maxPC+1,videli:[],archiv:false,created:Date.now(),updated:Date.now(),lastEditBy:currentOsoba,editNotifPotv:[]};
+  const kopia={evCislo:o.evCislo||'',objednavatel:o.objednavatel||'',kontakt:o.kontakt||'',mobil:o.mobil||'',mail:o.mail||'',osoba:o.osoba||'',faktor:o.faktor||'',termin:o.termin||null,terminDo:o.terminDo||null,terminText:o.terminText||'',terminDoText:o.terminDoText||'',cas:o.cas||'',miesto:o.miesto||'',stav:o.stav||'objednané',poznamka:o.poznamka||'',poradCislo:maxPC+1,videli:[],archiv:false,created:Date.now(),updated:Date.now(),lastEditBy:currentOsoba,editNotifPotv:[]};
   try{ await addDoc(collection(db,'objednavky'),kopia); await nacitaj(); } catch(e){ alert('Chyba: '+e.message); }
 };
 
