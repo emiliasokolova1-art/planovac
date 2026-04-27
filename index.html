@@ -294,20 +294,20 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
       <label>Miesto / Adresa</label><input id="m-miesto" placeholder="Adresa prevádzky">
     </div>
     <!-- Riadok 4: Termín + Čas -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
-      <div class="field"><label>Termín Od (nepovinné)</label>
+    <div class="grid2" style="gap:12px;margin-bottom:12px">
+      <div class="field"><label>Termín Od</label>
         <div style="display:flex;align-items:center;gap:4px">
           <input type="text" id="m-termin-text" placeholder="napr. máj 2026" style="flex:1" oninput="syncTermin(this.value)">
           <input type="date" id="m-termin-date" onchange="syncTerminFromDate(this.value)" style="width:130px;padding:0 6px;cursor:pointer" title="Vybrať dátum Od">
         </div>
       </div>
-      <div class="field"><label>Termín Do (nepovinné)</label>
-        <div style="display:flex;align-items:center;gap:4px">
-          <input type="text" id="m-termin-do-text" placeholder="napr. máj 2026" style="flex:1" oninput="syncTerminDo(this.value)">
-          <input type="date" id="m-termin-do-date" onchange="syncTerminDoFromDate(this.value)" style="width:130px;padding:0 6px;cursor:pointer" title="Vybrať dátum Do">
-        </div>
-      </div>
       <div class="field"><label>Čas merania</label><select id="m-cas"><option value="">—</option></select></div>
+    </div>
+    <div class="field" style="margin-bottom:12px"><label>Termín Do</label>
+      <div style="display:flex;align-items:center;gap:4px">
+        <input type="text" id="m-termin-do-text" placeholder="napr. máj 2026" style="flex:1" oninput="syncTerminDo(this.value)">
+        <input type="date" id="m-termin-do-date" onchange="syncTerminDoFromDate(this.value)" style="width:130px;padding:0 6px;cursor:pointer" title="Vybrať dátum Do">
+      </div>
     </div>
     <!-- Záložky faktorov (len pri novej objednávke) -->
     <div id="ftab-wrapper" style="display:none">
