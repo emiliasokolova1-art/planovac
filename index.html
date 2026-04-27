@@ -303,11 +303,14 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
       </div>
       <div class="field"><label>Čas merania</label><select id="m-cas"><option value="">—</option></select></div>
     </div>
-    <div class="field" style="margin-bottom:12px"><label>Termín Do</label>
-      <div style="display:flex;align-items:center;gap:4px">
-        <input type="text" id="m-termin-do-text" placeholder="napr. máj 2026" style="flex:1" oninput="syncTerminDo(this.value)">
-        <input type="date" id="m-termin-do-date" onchange="syncTerminDoFromDate(this.value)" style="width:130px;padding:0 6px;cursor:pointer" title="Vybrať dátum Do">
+    <div class="grid2" style="gap:12px;margin-bottom:12px">
+      <div class="field"><label>Termín Do</label>
+        <div style="display:flex;align-items:center;gap:4px">
+          <input type="text" id="m-termin-do-text" placeholder="napr. máj 2026" style="flex:1" oninput="syncTerminDo(this.value)">
+          <input type="date" id="m-termin-do-date" onchange="syncTerminDoFromDate(this.value)" style="width:130px;padding:0 6px;cursor:pointer" title="Vybrať dátum Do">
+        </div>
       </div>
+      <div></div>
     </div>
     <!-- Záložky faktorov (len pri novej objednávke) -->
     <div id="ftab-wrapper" style="display:none">
@@ -822,7 +825,7 @@ window.renderKalendar=function(){
     ev.forEach(o=>{
       const mesto=extractMesto(o.miesto||'');
       h+='<div class="kal-event chip-os os-'+esc(o.osoba||'')+'" onclick="otvorDetail(\''+o.id+'\')" title="'+esc(o.objednavatel||'')+' — '+esc(o.faktor||'')+' — '+esc(o.miesto||'')+'">';
-      h+=esc(o.osoba||'?');
+      h+=esc(o.osoba||o.faktor||'?');
       if(mesto) h+='<br><span style="font-size:9px;opacity:.8">'+esc(mesto)+'</span>';
       h+='</div>';
     });
@@ -909,7 +912,7 @@ window.ulozitObjednavku=async function(){
       }
       const oldO=[...objednavky,...historia].find(x=>x.id===editId);
       const groupId=oldO&&oldO.groupId;
-      const skupFields=['objednavatel','kontakt','mobil','mail','termin','cas','miesto'];
+      const skupFields=['objednavatel','kontakt','mobil','mail','termin','terminDo','cas','miesto'];
       const zmenene={};
       if(isSef) skupFields.forEach(f=>{ const nv=data[f]||null,ov=oldO&&(oldO[f]||null); if(nv!==ov) zmenene[f]=nv; });
       const niecoZmenene=Object.keys(zmenene).length>0;
@@ -935,7 +938,8 @@ window.ulozitObjednavku=async function(){
       allSnap.forEach(d=>{ const pc=d.data().poradCislo||0; if(pc>maxPC) maxPC=pc; });
       const shared={
         objednavatel:gv('m-obj'), kontakt:gv('m-kontakt'), mobil:gv('m-mobil'),
-        mail:gv('m-mail'), termin:getTerminValue(), terminText:getTerminText(),
+        mail:gv('m-mail'), termin:getTerminValue(), terminDo:getTerminDoValue(),
+        terminText:getTerminText(), terminDoText:getTerminDoText(),
         cas:gv('m-cas'), miesto:gv('m-miesto'), stav:gv('m-stav'),
         videli:[], archiv:false, updated:Date.now(), lastEditBy:currentOsoba, editNotifPotv:[]
       };
