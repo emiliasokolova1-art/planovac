@@ -294,12 +294,17 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
       <label>Miesto / Adresa</label><input id="m-miesto" placeholder="Adresa prevádzky">
     </div>
     <!-- Riadok 4: Termín + Čas -->
-    <div class="grid2" style="gap:12px;margin-bottom:12px">
-      <div class="field"><label>Termín (nepovinné)</label>
-        <div style="display:flex;align-items:center;gap:6px">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+      <div class="field"><label>Termín Od (nepovinné)</label>
+        <div style="display:flex;align-items:center;gap:4px">
           <input type="text" id="m-termin-text" placeholder="napr. máj 2026" style="flex:1" oninput="syncTermin(this.value)">
-          <span style="font-size:11px;color:var(--text3);white-space:nowrap">alebo</span>
-          <input type="date" id="m-termin-date" onchange="syncTerminFromDate(this.value)" style="width:130px;padding:0 6px;cursor:pointer" title="Vybrať dátum">
+          <input type="date" id="m-termin-date" onchange="syncTerminFromDate(this.value)" style="width:130px;padding:0 6px;cursor:pointer" title="Vybrať dátum Od">
+        </div>
+      </div>
+      <div class="field"><label>Termín Do (nepovinné)</label>
+        <div style="display:flex;align-items:center;gap:4px">
+          <input type="text" id="m-termin-do-text" placeholder="napr. máj 2026" style="flex:1" oninput="syncTerminDo(this.value)">
+          <input type="date" id="m-termin-do-date" onchange="syncTerminDoFromDate(this.value)" style="width:130px;padding:0 6px;cursor:pointer" title="Vybrať dátum Do">
         </div>
       </div>
       <div class="field"><label>Čas merania</label><select id="m-cas"><option value="">—</option></select></div>
@@ -455,8 +460,21 @@ window.syncTerminFromDate=function(val){
   if(val){ const p=val.split('-'); gi('m-termin-text').value=p[2]+'.'+p[1]+'.'+p[0]; }
   checkKoliziaVal(val);
 };
+function syncTerminDo(val){
+  const d1=val.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+  const d2=val.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(d1){ gi('m-termin-do-date').value=d1[3]+'-'+d1[2].padStart(2,'0')+'-'+d1[1].padStart(2,'0'); }
+  else if(d2){ gi('m-termin-do-date').value=val; }
+  else { gi('m-termin-do-date').value=''; }
+}
+window.syncTerminDo=syncTerminDo;
+window.syncTerminDoFromDate=function(val){
+  if(val){ const p=val.split('-'); gi('m-termin-do-text').value=p[2]+'.'+p[1]+'.'+p[0]; }
+};
 function getTerminValue(){ return gi('m-termin-date')?gi('m-termin-date').value||null:null; }
+function getTerminDoValue(){ return gi('m-termin-do-date')?gi('m-termin-do-date').value||null:null; }
 function getTerminText(){ return gv('m-termin-text'); }
+function getTerminDoText(){ return gv('m-termin-do-text'); }
 function checkKoliziaVal(isoDate){
   const warn=gi('koliz-warn'); if(!warn) return;
   if(!isoDate){ warn.style.display='none'; return; }
@@ -675,7 +693,15 @@ window.renderTabulka=function(){
     h+='<td class="col-fix">'+esc(o.mobil||'—')+'</td>';
     h+='<td class="col-fix"><span class="chip-os os-'+esc(o.osoba||'')+'">'+esc(o.osoba||'—')+'</span></td>';
     h+='<td class="col-fix"><span class="chip-faktor">'+esc(o.faktor||'—')+'</span></td>';
-    h+='<td class="col-fix">'+(o.termin?formatDatum(o.termin):(o.terminText?'<span style="color:var(--text3);font-style:italic">'+esc(o.terminText)+'</span>':'<span style="color:var(--text4);font-style:italic">bez dátumu</span>'))+'</td>';
+    h+='<td class="col-fix">'+(function(){
+      if(o.termin){
+        let s=formatDatum(o.termin);
+        if(o.terminDo&&o.terminDo!==o.termin) s+='<br><span style="font-size:10px;color:var(--text3)">— '+formatDatum(o.terminDo)+'</span>';
+        return s;
+      }
+      if(o.terminText) return '<span style="color:var(--text3);font-style:italic">'+esc(o.terminText)+'</span>';
+      return '<span style="color:var(--text4);font-style:italic">bez dátumu</span>';
+    })()+'</td>';
     h+='<td class="col-fix">'+esc(o.cas||'—')+'</td>';
     h+='<td class="col-wrap">'+esc(o.miesto||'—')+'</td>';
     h+='<td class="col-fix"><span class="chip-stav '+stavClass(o.stav)+'">'+esc(o.stav||'—')+'</span></td>';
@@ -786,7 +812,11 @@ window.renderKalendar=function(){
   for(let i=0;i<zacat;i++) h+='<div class="kal-cell iny-mesiac"><div class="kal-date">'+(new Date(kalRok,kalMesiac,-(zacat-i-1))).getDate()+'</div></div>';
   for(let d=1;d<=posledny.getDate();d++){
     const ds=kalRok+'-'+String(kalMesiac+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-    let ev=objednavky.filter(o=>o.termin===ds);
+    let ev=objednavky.filter(o=>{
+      if(!o.termin) return false;
+      if(!o.terminDo||o.terminDo===o.termin) return o.termin===ds;
+      return ds>=o.termin&&ds<=o.terminDo;
+    });
     if(fOs) ev=ev.filter(o=>o.osoba===fOs);
     h+='<div class="kal-cell'+(ds===dnesStr?' dnes':'')+'"><div class="kal-date">'+(ds===dnesStr?'<b>'+d+'</b>':d)+'</div>';
     ev.forEach(o=>{
@@ -808,7 +838,7 @@ window.otvorModal=function(){
   editId=null;
   gi('modal-title').textContent='Nová objednávka';
   ['m-obj','m-kontakt','m-mobil','m-mail','m-miesto'].forEach(id=>{const e=gi(id);if(e)e.value='';})
-  sv('m-termin-text',''); sv('m-termin-date','');
+  sv('m-termin-text',''); sv('m-termin-date',''); sv('m-termin-do-text',''); sv('m-termin-do-date','');
   gi('m-stav').value='objednané';
   naplnCasy(''); sv('m-cas','');
   gi('koliz-warn').style.display='none';
@@ -843,6 +873,9 @@ window.editObjednavku=function(id){
   sv('m-termin-date',o.termin||'');
   const tText=o.terminText||(o.termin?(function(v){const p=v.split('-');return p[2]+'.'+p[1]+'.'+p[0];})(o.termin):'');
   sv('m-termin-text',tText);
+  sv('m-termin-do-date',o.terminDo||'');
+  const tDoText=o.terminDoText||(o.terminDo?(function(v){const p=v.split('-');return p[2]+'.'+p[1]+'.'+p[0];})(o.terminDo):'');
+  sv('m-termin-do-text',tDoText);
   sv('m-miesto',o.miesto||''); sv('m-stav',o.stav||'objednané');
   naplnCasy(o.cas||''); sv('m-cas',o.cas||'');
   sv('m-osoba',o.osoba||''); sv('m-faktor',o.faktor||'');
@@ -866,7 +899,7 @@ window.ulozitObjednavku=async function(){
         data={
           evCislo:gv('m-evcislo'), objednavatel:gv('m-obj'), kontakt:gv('m-kontakt'),
           mobil:gv('m-mobil'), mail:gv('m-mail'), osoba:gv('m-osoba'), faktor:gv('m-faktor'),
-          termin:getTerminValue(), terminText:getTerminText(), cas:gv('m-cas'),
+          termin:getTerminValue(), terminDo:getTerminDoValue(), terminText:getTerminText(), terminDoText:getTerminDoText(), cas:gv('m-cas'),
           miesto:gv('m-miesto'), stav:gv('m-stav'), poznamka:poz?poz.value:'',
           updated:Date.now(), lastEditBy:currentOsoba, editNotifPotv:[]
         };
@@ -1098,10 +1131,10 @@ window.exportCSV=function(tab){
   if(fOs) d=d.filter(o=>o.osoba===fOs);
   if(fRok) d=d.filter(o=>o.termin&&o.termin.startsWith(fRok));
   if(fS) d=d.filter(o=>[o.evCislo,o.objednavatel,o.kontakt,o.miesto,o.poznamka].join(' ').toLowerCase().includes(fS));
-  const hdr=['P.c.','GroupId','Ev.cislo','Objednavatel','Kontakt','Mobil','Email','Zodpovedny','Faktor','Termin','Cas','Miesto','Stav','Poznamka'];
+  const hdr=['P.c.','GroupId','Ev.cislo','Objednavatel','Kontakt','Mobil','Email','Zodpovedny','Faktor','Termin','TerminDo','Cas','Miesto','Stav','Poznamka'];
   function q(v){ return '"'+(v||'').toString().replace(/"/g,'""')+'"'; }
   const rows=d.map(function(o){
-    return [o.poradCislo||'',o.groupId||'',o.evCislo,o.objednavatel,o.kontakt,o.mobil,o.mail,o.osoba,o.faktor,o.termin?formatDatum(o.termin):'',o.cas,o.miesto,o.stav,o.poznamka].map(q).join(';');
+    return [o.poradCislo||'',o.groupId||'',o.evCislo,o.objednavatel,o.kontakt,o.mobil,o.mail,o.osoba,o.faktor,o.termin?formatDatum(o.termin):'',o.terminDo?formatDatum(o.terminDo):'',o.cas,o.miesto,o.stav,o.poznamka].map(q).join(';');
   });
   const csv='\uFEFF'+hdr.map(q).join(';')+'\n'+rows.join('\n');
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
@@ -1134,6 +1167,9 @@ window.importCSV=async function(event,tab){
     const terminRaw=get(cols,'Termin')||get(cols,'Termín');
     let termin='';
     if(terminRaw){ const p=terminRaw.split('.'); if(p.length===3) termin=p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0'); }
+    const terminDoRaw=get(cols,'TerminDo');
+    let terminDo='';
+    if(terminDoRaw){ const p=terminDoRaw.split('.'); if(p.length===3) terminDo=p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0'); }
     const oldGId=get(cols,'GroupId');
     let newGId=null;
     if(oldGId){ if(!groupMap[oldGId]) groupMap[oldGId]='grp'+Date.now()+Math.random().toString(36).slice(2,6); newGId=groupMap[oldGId]; }
@@ -1143,7 +1179,7 @@ window.importCSV=async function(event,tab){
       objednavatel:get(cols,'Objednavatel')||get(cols,'Objednávateľ'),
       kontakt:get(cols,'Kontakt'), mobil:get(cols,'Mobil'), mail:get(cols,'Email'),
       osoba:get(cols,'Zodpovedny')||get(cols,'Zodpovedný'), faktor:get(cols,'Faktor'),
-      termin:termin||null, cas:get(cols,'Cas')||get(cols,'Čas'), miesto:get(cols,'Miesto'),
+      termin:termin||null, terminDo:terminDo||null, cas:get(cols,'Cas')||get(cols,'Čas'), miesto:get(cols,'Miesto'),
       stav:get(cols,'Stav')||'objednané', poznamka:get(cols,'Poznamka')||get(cols,'Poznámka'),
       groupId:newGId, archiv:tab==='historia', videli:[],
       poradCislo:pcRaw?parseInt(pcRaw):null,
