@@ -914,7 +914,7 @@ window.editObjednavku=function(id){
   const poz=gi('m-poznamka'); if(poz) poz.value=o.poznamka||'';
   gi('koliz-warn').style.display='none';
   // Lock fields for non-sef
-  const zamknute=['m-obj','m-kontakt','m-mobil','m-mail','m-termin-text','m-termin-date','m-miesto','m-osoba','m-faktor','m-cas'];
+  const zamknute=['m-obj','m-kontakt','m-mobil','m-mail','m-termin-text','m-termin-date','m-termin-do-text','m-termin-do-date','m-miesto','m-osoba','m-faktor','m-cas'];
   zamknute.forEach(fid=>{ const el=gi(fid); if(!el) return; el.disabled=!isSef; el.style.opacity=isSef?'1':'0.5'; });
   gi('modal').style.display='flex';
 };
