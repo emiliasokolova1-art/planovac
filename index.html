@@ -780,7 +780,7 @@ window.renderTabulka=function(){
     })()+'</td>';
     h+='<td class="col-fix">'+esc(o.cas||'—')+'</td>';
     h+='<td class="col-wrap">'+esc(o.miesto||'—')+'</td>';
-    h+='<td class="col-fix"><span class="chip-stav '+stavClass(o.stav)+'">'+esc(o.stav||'—')+'</span></td>';
+    h+='<td class="col-fix"><span class="chip-stav '+stavClass(o.stav)+'">'+stavLabel(o.stav)+'</span></td>';
     h+='<td class="col-wrap">'+esc(o.poznamka||'')+'</td>';
     h+='<td class="col-fix" style="font-size:11px;color:var(--text3)">'+esc(videli.join(', ')||'—')+'</td>';
     h+='<td onclick="event.stopPropagation()" style="white-space:nowrap">';
@@ -824,7 +824,7 @@ window.renderHistoria=function(){
     h+='<td class="col-fix">'+(o.termin?formatDatum(o.termin):(o.terminText?'<span style="color:var(--text3);font-style:italic">'+esc(o.terminText)+'</span>':'—'))+'</td>';
     h+='<td class="col-fix">'+esc(o.cas||'—')+'</td>';
     h+='<td class="col-wrap">'+esc(o.miesto||'—')+'</td>';
-    h+='<td class="col-fix"><span class="chip-stav '+stavClass(o.stav)+'">'+esc(o.stav||'—')+'</span></td>';
+    h+='<td class="col-fix"><span class="chip-stav '+stavClass(o.stav)+'">'+stavLabel(o.stav)+'</span></td>';
     h+='<td class="col-wrap">'+esc(o.poznamka||'')+'</td>';
     h+='<td class="col-fix" style="font-size:11px;color:var(--text3)">'+esc(videli.join(', ')||'—')+'</td>';
     h+='<td onclick="event.stopPropagation()" style="white-space:nowrap">';
@@ -864,7 +864,7 @@ window.renderMoje=function(){
     h+='<td class="col-fix">'+(o.termin?formatDatum(o.termin):(o.terminText?'<span style="color:var(--text3);font-style:italic">'+esc(o.terminText)+'</span>':'<span style="color:var(--text4);font-style:italic">bez dátumu</span>'))+'</td>';
     h+='<td class="col-fix">'+esc(o.cas||'—')+'</td>';
     h+='<td class="col-wrap">'+esc(o.miesto||'—')+'</td>';
-    h+='<td class="col-fix"><span class="chip-stav '+stavClass(o.stav)+'">'+esc(o.stav||'—')+'</span></td>';
+    h+='<td class="col-fix"><span class="chip-stav '+stavClass(o.stav)+'">'+stavLabel(o.stav)+'</span></td>';
     h+='<td class="col-wrap">'+esc(o.poznamka||'')+'</td>';
     h+='<td class="col-fix" style="font-size:11px;color:var(--text3)">'+esc(videli.join(', ')||'—')+'</td>';
     h+='<td class="col-wrap" style="color:var(--text2);font-size:11px;font-style:'+(pz?'normal':'italic')+'">'+esc(pz||'—')+'</td>';
@@ -890,7 +890,7 @@ window.renderKalendar=function(){
   for(let i=0;i<zacat;i++) h+='<div class="kal-cell iny-mesiac"><div class="kal-date">'+(new Date(kalRok,kalMesiac,-(zacat-i-1))).getDate()+'</div></div>';
   for(let d=1;d<=posledny.getDate();d++){
     const ds=kalRok+'-'+String(kalMesiac+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-    let ev=objednavky.filter(o=>{
+    let ev=[...objednavky,...historia].filter(o=>{
       if(!o.termin) return false;
       if(!o.terminDo||o.terminDo===o.termin) return o.termin===ds;
       return ds>=o.termin&&ds<=o.terminDo;
@@ -1105,7 +1105,7 @@ window.otvorDetail=function(id){
   gi('det-title').textContent=(o.evCislo||'Objednávka')+' — '+esc(o.objednavatel||'');
   const pz=osobnePozn[o.id]||'';
   const terminDisp=o.termin?formatDatum(o.termin):(o.terminText?o.terminText:'<span style="color:var(--text4)">bez dátumu</span>');
-  const pols=[['Ev. číslo',esc(o.evCislo||'—')],['Stav','<span class="chip-stav '+stavClass(o.stav)+'">'+esc(o.stav||'—')+'</span>'],['Objednávateľ',esc(o.objednavatel||'—')],['Kontaktná osoba',esc(o.kontakt||'—')],['Mobil',esc(o.mobil||'—')],['Email',esc(o.mail||'—')],['Zodpovedný','<span class="chip-os os-'+esc(o.osoba||'')+'">'+esc(o.osoba||'—')+'</span>'],['Faktor','<span class="chip-faktor">'+esc(o.faktor||'—')+'</span>'],['Termín',terminDisp],['Termín Do',o.terminDo?formatDatum(o.terminDo):(o.terminDoText?esc(o.terminDoText):'—')],['Čas',esc(o.cas||'—')],['Miesto',esc(o.miesto||'—')],['Poznámka',esc(o.poznamka||'—')],['Moja poznámka',esc(pz||'—')],['Videli',(o.videli||[]).join(', ')||'—'],['Naposledy upravil',esc(o.lastEditBy||'—')]];
+  const pols=[['Ev. číslo',esc(o.evCislo||'—')],['Stav','<span class="chip-stav '+stavClass(o.stav)+'">'+stavLabel(o.stav)+'</span>'],['Objednávateľ',esc(o.objednavatel||'—')],['Kontaktná osoba',esc(o.kontakt||'—')],['Mobil',esc(o.mobil||'—')],['Email',esc(o.mail||'—')],['Zodpovedný','<span class="chip-os os-'+esc(o.osoba||'')+'">'+esc(o.osoba||'—')+'</span>'],['Faktor','<span class="chip-faktor">'+esc(o.faktor||'—')+'</span>'],['Termín',terminDisp],['Termín Do',o.terminDo?formatDatum(o.terminDo):(o.terminDoText?esc(o.terminDoText):'—')],['Čas',esc(o.cas||'—')],['Miesto',esc(o.miesto||'—')],['Poznámka',esc(o.poznamka||'—')],['Moja poznámka',esc(pz||'—')],['Videli',(o.videli||[]).join(', ')||'—'],['Naposledy upravil',esc(o.lastEditBy||'—')]];
   let h='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px">';
   pols.forEach(([k,v])=>{ h+='<div style="padding:6px 0;border-bottom:1px solid var(--border3)"><div style="font-size:11px;color:var(--text3)">'+k+'</div><div>'+v+'</div></div>'; });
   h+='</div>';
@@ -1274,6 +1274,11 @@ window.importCSV=async function(event,tab){
 // ── HELPERS ───────────────────────────────────────────────
 function stavClass(s){
   return {'objednané':'stav-objednane','odmerané':'stav-odmerane','domerať':'stav-domerat','čaká sa na podklady':'stav-caka-podklady','vypracované - neschválené':'stav-vyprac-neschv','vypracované - schválené':'stav-vyprac-schv','čaká sa na platbu':'stav-caka-platbu','odovzdané':'stav-odovzdane'}[s]||'stav-objednane';
+}
+function stavLabel(s){
+  return (s||'—')
+    .replace('vypracované - neschválené','vypracované -<br>neschválené')
+    .replace('vypracované - schválené','vypracované -<br>schválené');
 }
 function formatDatum(d){ if(!d)return '—'; const p=d.split('-'); return p[2]+'.'+p[1]+'.'+p[0]; }
 function extractMesto(miesto){
