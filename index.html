@@ -182,7 +182,8 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
     <div style="margin-bottom:1rem;font-size:13px;color:var(--text2)">Objednávky so stavom <b>odovzdané</b>. Správca môže objednávku presunúť sem z detailu.</div>
     <div class="filter-bar">
       <select id="hf-osoba" onchange="renderHistoria()"><option value="">Všetky osoby</option><option>Lenka</option><option>Katka</option><option>Emilia</option><option>Veducky</option><option>Andrej</option></select>
-      <select id="hf-rok" onchange="renderHistoria()"><option value="">Všetky roky</option></select>
+      <select id="hf-rok" onchange="renderHistoria();naplnMesiaceHistoria()"><option value="">Všetky roky</option></select>
+      <select id="hf-mesiac" onchange="renderHistoria()"><option value="">Všetky mesiace</option></select>
       <input type="text" id="hf-search" placeholder="🔍 Hľadať..." style="min-width:160px" oninput="renderHistoria()">
       <button class="btn btn-sm" onclick="resetFiltre('historia')">Zrušiť filtre</button>
       <button class="btn btn-sm" onclick="exportCSV('historia')">📥 Export CSV</button>
@@ -622,6 +623,7 @@ async function nacitaj(){
     naplnRoky();
     renderNotify(); renderEditNotify();
     renderTabulka(); renderHistoria(); renderKalendar(); renderMoje();
+    naplnMesiaceHistoria();
   } catch(e){ console.error(e); }
 }
 async function nacitajPoznamky(){
@@ -629,6 +631,48 @@ async function nacitajPoznamky(){
   try{ const snap=await getDocs(collection(db,'osobne_poznamky')); snap.forEach(d=>{ if(d.id===currentUser.uid) osobnePozn=d.data().poznamky||{}; }); }
   catch(e){}
 }
+function naplnMesiaceHistoria(){
+  const el=gi('hf-mesiac'); if(!el) return;
+  const rok=gv('hf-rok');
+  const data=rok?historia.filter(o=>o.termin&&o.termin.startsWith(rok)):historia;
+  const mesiace=[...new Set(data.filter(o=>o.termin).map(o=>o.termin.slice(5,7)))].sort();
+  const nazvy=['','január','február','marec','apríl','máj','jún','júl','august','september','október','november','december'];
+  const cur=el.value;
+  el.innerHTML='<option value="">Všetky mesiace</option>';
+  // get unique rok-mesiac combos for display
+  const rokMesiac=[...new Set(data.filter(o=>o.termin).map(o=>o.termin.slice(0,7)))].sort().reverse();
+  rokMesiac.forEach(rm=>{
+    const [r,m]=rm.split('-');
+    const op=document.createElement('option');
+    op.value=m; op.textContent=nazvy[parseInt(m)]+' '+r;
+    // if same rok is selected, use just month value; otherwise use rok-mes
+    op.dataset.rok=r;
+    el.appendChild(op);
+  });
+  // Try to restore previous value
+  if(cur) el.value=cur;
+}
+
+function autoSelectNewestHistoria(){
+  // Find newest month in historia and pre-select it
+  const withDate=historia.filter(o=>o.termin);
+  if(!withDate.length) return;
+  withDate.sort((a,b)=>b.termin.localeCompare(a.termin));
+  const newest=withDate[0].termin; // YYYY-MM-DD
+  const rok=newest.slice(0,4);
+  const mes=newest.slice(5,7);
+  // Set rok filter
+  const rokEl=gi('hf-rok'); if(rokEl) rokEl.value=rok;
+  naplnMesiaceHistoria();
+  // Find and select the right option
+  const mesEl=gi('hf-mesiac');
+  if(mesEl){
+    for(const opt of mesEl.options){
+      if(opt.value===mes && opt.dataset.rok===rok){ mesEl.value=mes; break; }
+    }
+  }
+}
+
 function naplnRoky(){
   const roky=[...new Set([...objednavky,...historia].filter(o=>o.termin).map(o=>o.termin.slice(0,4)))].sort().reverse();
   ['f-rok','hf-rok','mf-rok'].forEach(id=>{
@@ -682,7 +726,7 @@ window.showSec=function(name){
   gi('sec-'+name).classList.add('active'); gi('tab-'+name).classList.add('active');
   if(name==='moje') renderMoje();
   if(name==='kalendar') renderKalendar();
-  if(name==='historia') renderHistoria();
+  if(name==='historia'){ autoSelectNewestHistoria(); renderHistoria(); }
   if(name==='zakazky') nacitaj();
 };
 
@@ -751,16 +795,18 @@ window.renderTabulka=function(){
 window.sortBy=function(k){ if(sortKol===k) sortAsc=!sortAsc; else{sortKol=k;sortAsc=true;} renderTabulka(); };
 window.resetFiltre=function(tab){
   if(tab==='tabulka'){ ['f-osoba','f-faktor','f-stav','f-rok'].forEach(id=>{const e=gi(id);if(e)e.value='';}); gi('f-search').value=''; renderTabulka(); }
-  if(tab==='historia'){ ['hf-osoba','hf-rok'].forEach(id=>{const e=gi(id);if(e)e.value='';}); gi('hf-search').value=''; renderHistoria(); }
+  if(tab==='historia'){ ['hf-osoba','hf-rok','hf-mesiac'].forEach(id=>{const e=gi(id);if(e)e.value='';}); gi('hf-search').value=''; naplnMesiaceHistoria(); renderHistoria(); }
 };
 
 // ── HISTÓRIA ──────────────────────────────────────────────
 window.renderHistoria=function(){
   resetGroupColors();
-  const fOs=gv('hf-osoba'),fRok=gv('hf-rok'),fS=gv('hf-search').toLowerCase();
+  const fOs=gv('hf-osoba'),fRok=gv('hf-rok'),fMes=gv('hf-mesiac'),fS=gv('hf-search').toLowerCase();
   let data=[...historia];
   if(fOs) data=data.filter(o=>o.osoba===fOs);
-  if(fRok) data=data.filter(o=>o.termin&&o.termin.startsWith(fRok));
+  if(fRok&&fMes) data=data.filter(o=>o.termin&&o.termin.startsWith(fRok+'-'+fMes));
+  else if(fRok) data=data.filter(o=>o.termin&&o.termin.startsWith(fRok));
+  else if(fMes) data=data.filter(o=>o.termin&&o.termin.slice(5,7)===fMes);
   if(fS) data=data.filter(o=>[o.evCislo,o.objednavatel,o.kontakt,o.miesto].join(' ').toLowerCase().includes(fS));
   data.sort((a,b)=>((a.poradCislo||0)-(b.poradCislo||0)));
   let h='';
