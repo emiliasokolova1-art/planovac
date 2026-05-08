@@ -393,11 +393,11 @@ const auth = getAuth(fbApp);
 const db = getFirestore(fbApp);
 
 const USERS = {
-  'info@brennerams.sk': {osoba:'Veducky', true:true},
-  'lr@brennerams.sk':   {osoba:'Lenka',   true:true},
-  'kl@brennerams.sk':   {osoba:'Katka',   true:true},
-  'es@brennerams.sk':   {osoba:'Emilia',  true:true},
-  'xx@brennerams.sk':   {osoba:'Andrej',  true:true},
+  'info@brennerams.sk': {osoba:'Veducky'},
+  'lr@brennerams.sk':   {osoba:'Lenka'},
+  'kl@brennerams.sk':   {osoba:'Katka'},
+  'es@brennerams.sk':   {osoba:'Emilia'},
+  'xx@brennerams.sk':   {osoba:'Andrej'},
 };
 const FAKTORY = ['H-PP','H-ŽP','O','PA','Realizácia','SA','HS','V','TVM','TM'];
 const OSOBY = ['Lenka','Katka','Emilia','Veducky','Andrej'];
@@ -764,7 +764,7 @@ window.renderTabulka=function(){
     h+='<td class="col-wrap">'+esc(o.poznamka||'')+'</td>';
     h+='<td class="col-fix" style="font-size:11px;color:var(--text3)">'+esc(videli.join(', ')||'—')+'</td>';
     h+='<td onclick="event.stopPropagation()" style="white-space:nowrap">';
-    if(true) h+='<button class="btn btn-sm" onclick="editObjednavku(\''+o.id+'\')">✏️</button> <button class="btn btn-sm" onclick="kopirovatObjednavku(\''+o.id+'\')" title="Kopírovať">📑</button>';
+    h+='<button class="btn btn-sm" onclick="editObjednavku(\''+o.id+'\')">✏️</button> <button class="btn btn-sm" onclick="kopirovatObjednavku(\''+o.id+'\')" title="Kopírovať">📑</button>';
     else h+='<button class="btn btn-sm" onclick="editObjednavku(\''+o.id+'\')">✏️</button>'+(nevidena?' <button class="btn btn-sm" onclick="potvrditJednu(\''+o.id+'\')">✓</button>':'');
     h+='</td></tr>';
   });
@@ -808,7 +808,7 @@ window.renderHistoria=function(){
     h+='<td class="col-wrap">'+esc(o.poznamka||'')+'</td>';
     h+='<td class="col-fix" style="font-size:11px;color:var(--text3)">'+esc(videli.join(', ')||'—')+'</td>';
     h+='<td onclick="event.stopPropagation()" style="white-space:nowrap">';
-    if(true) h+='<button class="btn btn-sm" onclick="vychovatZHistorie(\''+o.id+'\')">↩</button> <button class="btn btn-sm btn-danger" onclick="vymazObjednavku(\''+o.id+'\')">×</button>';
+    h+='<button class="btn btn-sm" onclick="vychovatZHistorie(\''+o.id+'\')">↩</button> <button class="btn btn-sm btn-danger" onclick="vymazObjednavku(\''+o.id+'\')">×</button>';
     h+='</td></tr>';
   });
   gi('historia-body').innerHTML=h||'<tr><td colspan="14" style="text-align:center;padding:2rem;color:var(--text3)">Žiadna história</td></tr>';
@@ -937,9 +937,6 @@ window.editObjednavku=function(id){
   sv('m-osoba',o.osoba||''); sv('m-faktor',o.faktor||'');
   const poz=gi('m-poznamka'); if(poz) poz.value=o.poznamka||'';
   gi('koliz-warn').style.display='none';
-  // Lock fields for non-sef
-  const zamknute=['m-obj','m-kontakt','m-mobil','m-mail','m-termin-text','m-termin-date','m-termin-do-text','m-termin-do-date','m-miesto','m-osoba','m-faktor','m-cas'];
-  zamknute.forEach(fid=>{ const el=gi(fid); if(!el) return; el.disabled=false; el.style.opacity='1'; });
   gi('modal').style.display='flex';
 };
 
@@ -948,35 +945,30 @@ window.ulozitObjednavku=async function(){
   btn.disabled=true; btn.innerHTML='<span class="spinner"></span>';
   try{
     if(editId){
-      // Edit existing
-      let data;
-      if(true){
-        const poz=gi('m-poznamka');
-        data={
-          evCislo:gv('m-evcislo'), objednavatel:gv('m-obj'), kontakt:gv('m-kontakt'),
-          mobil:gv('m-mobil'), mail:gv('m-mail'), osoba:gv('m-osoba'), faktor:gv('m-faktor'),
-          termin:getTerminValue(), terminDo:getTerminDoValue(), terminText:getTerminText(), terminDoText:getTerminDoText(), cas:gv('m-cas'),
-          miesto:gv('m-miesto'), stav:gv('m-stav'), poznamka:poz?poz.value:'',
-          updated:Date.now(), lastEditBy:currentOsoba, editNotifPotv:[]
-        };
-      } else {
-        const poz=gi('m-poznamka');
-        data={ stav:gv('m-stav'), evCislo:gv('m-evcislo'), poznamka:poz?poz.value:'', updated:Date.now(), lastEditBy:currentOsoba, editNotifPotv:[] };
-      }
+      const poz=gi('m-poznamka');
+      const data={
+        evCislo:gv('m-evcislo'), objednavatel:gv('m-obj'), kontakt:gv('m-kontakt'),
+        mobil:gv('m-mobil'), mail:gv('m-mail'), osoba:gv('m-osoba'), faktor:gv('m-faktor'),
+        termin:getTerminValue(), terminDo:getTerminDoValue(),
+        terminText:getTerminText(), terminDoText:getTerminDoText(),
+        cas:gv('m-cas'), miesto:gv('m-miesto'), stav:gv('m-stav'),
+        poznamka:poz?poz.value:'',
+        updated:Date.now(), lastEditBy:currentOsoba, editNotifPotv:[]
+      };
       const oldO=[...objednavky,...historia].find(x=>x.id===editId);
       const groupId=oldO&&oldO.groupId;
       const skupFields=['objednavatel','kontakt','mobil','mail','termin','terminDo','cas','miesto'];
       const zmenene={};
-      if(true) skupFields.forEach(f=>{ const nv=data[f]||null,ov=oldO&&(oldO[f]||null); if(nv!==ov) zmenene[f]=nv; });
+      skupFields.forEach(f=>{ const nv=data[f]||null,ov=oldO&&(oldO[f]||null); if(nv!==ov) zmenene[f]=nv; });
       const niecoZmenene=Object.keys(zmenene).length>0;
-      if(true&&groupId&&niecoZmenene){
+      if(groupId&&niecoZmenene){
         const gM=objednavky.filter(o=>o.groupId===groupId&&o.id!==editId);
         if(gM.length){
           await updateDoc(doc(db,'objednavky',editId),data);
           pendingGroupData={...zmenene,updated:Date.now(),lastEditBy:currentOsoba,editNotifPotv:[]};
           pendingGroupIds=gM.map(o=>o.id);
           const names=gM.map(o=>'<b>'+esc(o.faktor||'?')+'</b> ('+esc(o.osoba||'?')+')').join(', ');
-          const zN=Object.keys(zmenene).map(f=>({'objednavatel':'Objednávateľ','kontakt':'Kontakt','mobil':'Mobil','mail':'Email','termin':'Termín','cas':'Čas','miesto':'Miesto'}[f]||f)).join(', ');
+          const zN=Object.keys(zmenene).map(f=>({'objednavatel':'Objednávateľ','kontakt':'Kontakt','mobil':'Mobil','mail':'Email','termin':'Termín','terminDo':'Termín Do','cas':'Čas','miesto':'Miesto'}[f]||f)).join(', ');
           gi('group-info').innerHTML='Zmenili ste: <b>'+zN+'</b>.<br>Súvisiace: '+names+'<br><br>Chcete zmeniť aj na nich?';
           btn.disabled=false; btn.textContent='Uložiť';
           zatvorModal(); gi('modal-group').style.display='flex'; await nacitaj(); return;
@@ -984,7 +976,7 @@ window.ulozitObjednavku=async function(){
       }
       await updateDoc(doc(db,'objednavky',editId),data);
     } else {
-      // New — save all tabs
+      // New objednavka - save all tabs
       updateFaktorTab(aktivnaZalozka);
       const allSnap=await getDocs(collection(db,'objednavky'));
       let maxPC=0;
@@ -1001,7 +993,7 @@ window.ulozitObjednavku=async function(){
         const tab=faktoryTabs[ti];
         await addDoc(collection(db,'objednavky'),Object.assign({},shared,{
           osoba:tab.osoba||'', faktor:tab.faktor||'', poznamka:tab.poznamka||'',
-          evCislo:tab.evcislo||'', poradCislo:maxPC+1+ti,
+          evCislo:'', poradCislo:maxPC+1+ti,
           groupId:gId2, created:Date.now()+(ti*100)
         }));
       }
@@ -1062,7 +1054,6 @@ window.ulozitStav=async function(){
   gi('modal-stav').style.display='none'; await nacitaj();
 };
 
-
 // ── DETAIL ────────────────────────────────────────────────
 window.otvorDetail=function(id){
   const o=[...objednavky,...historia].find(x=>x.id===id); if(!o) return;
@@ -1074,10 +1065,10 @@ window.otvorDetail=function(id){
   h+='</div>';
   gi('det-content').innerHTML=h;
   let acts='<button class="btn" onclick="zatvorDetail()">Zavrieť</button>';
-  if(true){
+  
     acts+=' <button class="btn btn-primary" onclick="zatvorDetail();editObjednavku(\''+id+'\')">✏️ Upraviť</button>';
     if(!o.archiv) acts+=' <button class="btn" onclick="presunutDoHistorie(\''+id+'\')" style="color:#6b7280;border-color:#6b7280">📦 Do histórie</button>';
-  } else {
+   else {
     acts+=' <button class="btn btn-primary" onclick="zatvorDetail();editObjednavku(\''+id+'\')">✏️ Upraviť</button>';
     const videl=(o.videli||[]).includes(currentOsoba);
     if(!videl&&o.osoba===currentOsoba) acts+=' <button class="btn" onclick="zatvorDetail();potvrditJednu(\''+id+'\')">✓ Videl(a) som</button>';
@@ -1095,7 +1086,6 @@ function updateSelectionUI(){
 }
 window.handleRowClick=function(e,id){
   if(e.target.tagName==='BUTTON'||e.target.tagName==='INPUT') return;
-  if(!true){ otvorDetail(id); return; }
   if(e.detail===2){ if(clickTimer){clearTimeout(clickTimer);clickTimer=null;} otvorDetail(id); return; }
   if(clickTimer){clearTimeout(clickTimer);clickTimer=null;}
   clickTimer=setTimeout(function(){
