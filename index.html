@@ -407,17 +407,17 @@ const auth = getAuth(fbApp);
 const db = getFirestore(fbApp);
 
 const USERS = {
-  'info@brennerams.sk': {osoba:'Veducky', isSef:true},
-  'lr@brennerams.sk':   {osoba:'Lenka',   isSef:false},
-  'kl@brennerams.sk':   {osoba:'Katka',   isSef:false},
-  'es@brennerams.sk':   {osoba:'Emilia',  isSef:false},
-  'xx@brennerams.sk':   {osoba:'Andrej',  isSef:false},
+  'info@brennerams.sk': {osoba:'Veducky'},
+  'lr@brennerams.sk':   {osoba:'Lenka',   },
+  'kl@brennerams.sk':   {osoba:'Katka',   },
+  'es@brennerams.sk':   {osoba:'Emilia',  },
+  'xx@brennerams.sk':   {osoba:'Andrej',  },
 };
 const FAKTORY = ['H-PP','H-ŽP','O','PA','Realizácia','SA','HS','V','TVM','TM'];
 const OSOBY = ['Lenka','Katka','Emilia','Veducky','Andrej'];
 const STAVY = ['objednané','odmerané','domerať','čaká sa na podklady','vypracované - neschválené','vypracované - schválené','čaká sa na platbu','odovzdané'];
 
-let currentUser=null, currentOsoba='', isSef=false;
+let currentUser=null, currentOsoba='';
 let objednavky=[], historia=[];
 let editId=null, stavEditId=null, poznEditId=null;
 let kalRok=new Date().getFullYear(), kalMesiac=new Date().getMonth();
@@ -596,11 +596,11 @@ gi('login-pass').addEventListener('keydown',e=>{ if(e.key==='Enter') window.doLo
 onAuthStateChanged(auth,user=>{
   if(user){
     currentUser=user;
-    const cfg=USERS[user.email]||{osoba:user.email.split('@')[0],isSef:false};
-    currentOsoba=cfg.osoba; isSef=cfg.isSef;
+    const cfg=USERS[user.email]||{osoba:user.email.split('@')[0]};
+    currentOsoba=cfg.osoba;
     gi('login-screen').style.display='none'; gi('app-screen').style.display='block';
-    gi('user-label').textContent=user.email+' ('+currentOsoba+(isSef?' — správca':'')+')';
-    gi('btn-nova').style.display=isSef?'':'none';
+    gi('user-label').textContent=user.email+' ('+currentOsoba+')';
+    gi('btn-nova').style.display='';
     nacitaj();
   } else {
     currentUser=null;
@@ -696,7 +696,7 @@ function renderNotify(){
 }
 function renderEditNotify(){
   if(!currentOsoba) return;
-  const ed=objednavky.filter(o=>o.lastEditBy&&o.lastEditBy!==currentOsoba&&(isSef||o.osoba===currentOsoba)&&!(o.editNotifPotv||[]).includes(currentOsoba));
+  const ed=objednavky.filter(o=>o.lastEditBy&&o.lastEditBy!==currentOsoba&&(true||o.osoba===currentOsoba)&&!(o.editNotifPotv||[]).includes(currentOsoba));
   const area=gi('edit-notify-area');
   if(!ed.length){ area.innerHTML=''; return; }
   let h='<div class="edit-notify"><b>✏️ Upravené objednávky ('+ed.length+'):</b><br>';
@@ -715,7 +715,7 @@ window.potvrditJednu=async function(id){
   await nacitaj();
 };
 window.potvrditEditNotif=async function(){
-  const ed=objednavky.filter(o=>o.lastEditBy&&o.lastEditBy!==currentOsoba&&(isSef||o.osoba===currentOsoba)&&!(o.editNotifPotv||[]).includes(currentOsoba));
+  const ed=objednavky.filter(o=>o.lastEditBy&&o.lastEditBy!==currentOsoba&&(true||o.osoba===currentOsoba)&&!(o.editNotifPotv||[]).includes(currentOsoba));
   for(const o of ed){ const ep=[...new Set([...(o.editNotifPotv||[]),currentOsoba])]; await updateDoc(doc(db,'objednavky',o.id),{editNotifPotv:ep}); }
   await nacitaj();
 };
@@ -784,7 +784,7 @@ window.renderTabulka=function(){
     h+='<td class="col-wrap">'+esc(o.poznamka||'')+'</td>';
     h+='<td class="col-fix" style="font-size:11px;color:var(--text3)">'+esc(videli.join(', ')||'—')+'</td>';
     h+='<td onclick="event.stopPropagation()" style="white-space:nowrap">';
-    if(isSef) h+='<button class="btn btn-sm" onclick="editObjednavku(\''+o.id+'\')">✏️</button> <button class="btn btn-sm" onclick="kopirovatObjednavku(\''+o.id+'\')" title="Kopírovať">📑</button>';
+    if(true) h+='<button class="btn btn-sm" onclick="editObjednavku(\''+o.id+'\')">✏️</button> <button class="btn btn-sm" onclick="kopirovatObjednavku(\''+o.id+'\')" title="Kopírovať">📑</button>';
     else h+='<button class="btn btn-sm" onclick="editObjednavku(\''+o.id+'\')">✏️</button>'+(nevidena?' <button class="btn btn-sm" onclick="potvrditJednu(\''+o.id+'\')">✓</button>':'');
     h+='</td></tr>';
   });
@@ -828,7 +828,7 @@ window.renderHistoria=function(){
     h+='<td class="col-wrap">'+esc(o.poznamka||'')+'</td>';
     h+='<td class="col-fix" style="font-size:11px;color:var(--text3)">'+esc(videli.join(', ')||'—')+'</td>';
     h+='<td onclick="event.stopPropagation()" style="white-space:nowrap">';
-    if(isSef) h+='<button class="btn btn-sm" onclick="vychovatZHistorie(\''+o.id+'\')">↩</button> <button class="btn btn-sm btn-danger" onclick="vymazObjednavku(\''+o.id+'\')">×</button>';
+    if(true) h+='<button class="btn btn-sm" onclick="vychovatZHistorie(\''+o.id+'\')">↩</button> <button class="btn btn-sm btn-danger" onclick="vymazObjednavku(\''+o.id+'\')">×</button>';
     h+='</td></tr>';
   });
   gi('historia-body').innerHTML=h||'<tr><td colspan="14" style="text-align:center;padding:2rem;color:var(--text3)">Žiadna história</td></tr>';
@@ -961,7 +961,7 @@ window.editObjednavku=function(id){
   gi('koliz-warn').style.display='none';
   // Lock fields for non-sef
   const zamknute=['m-obj','m-kontakt','m-mobil','m-mail','m-termin-text','m-termin-date','m-termin-do-text','m-termin-do-date','m-miesto','m-osoba','m-faktor','m-cas'];
-  zamknute.forEach(fid=>{ const el=gi(fid); if(!el) return; el.disabled=!isSef; el.style.opacity=isSef?'1':'0.5'; });
+  zamknute.forEach(fid=>{ const el=gi(fid); if(!el) return; el.disabled=!true; el.style.opacity=true?'1':'0.5'; });
   gi('modal').style.display='flex';
 };
 
@@ -972,7 +972,7 @@ window.ulozitObjednavku=async function(){
     if(editId){
       // Edit existing
       let data;
-      if(isSef){
+      if(true){
         const poz=gi('m-poznamka');
         data={
           evCislo:gv('m-evcislo'), objednavatel:gv('m-obj'), kontakt:gv('m-kontakt'),
@@ -989,9 +989,9 @@ window.ulozitObjednavku=async function(){
       const groupId=oldO&&oldO.groupId;
       const skupFields=['objednavatel','kontakt','mobil','mail','termin','terminDo','cas','miesto'];
       const zmenene={};
-      if(isSef) skupFields.forEach(f=>{ const nv=data[f]||null,ov=oldO&&(oldO[f]||null); if(nv!==ov) zmenene[f]=nv; });
+      if(true) skupFields.forEach(f=>{ const nv=data[f]||null,ov=oldO&&(oldO[f]||null); if(nv!==ov) zmenene[f]=nv; });
       const niecoZmenene=Object.keys(zmenene).length>0;
-      if(isSef&&groupId&&niecoZmenene){
+      if(true&&groupId&&niecoZmenene){
         const gM=objednavky.filter(o=>o.groupId===groupId&&o.id!==editId);
         if(gM.length){
           await updateDoc(doc(db,'objednavky',editId),data);
@@ -1111,7 +1111,7 @@ window.otvorDetail=function(id){
   h+='</div>';
   gi('det-content').innerHTML=h;
   let acts='<button class="btn" onclick="zatvorDetail()">Zavrieť</button>';
-  if(isSef){
+  if(true){
     acts+=' <button class="btn btn-primary" onclick="zatvorDetail();editObjednavku(\''+id+'\')">✏️ Upraviť</button>';
     if(!o.archiv) acts+=' <button class="btn" onclick="presunutDoHistorie(\''+id+'\')" style="color:#6b7280;border-color:#6b7280">📦 Do histórie</button>';
   } else {
@@ -1133,7 +1133,7 @@ function updateSelectionUI(){
 }
 window.handleRowClick=function(e,id){
   if(e.target.tagName==='BUTTON'||e.target.tagName==='INPUT') return;
-  if(!isSef){ otvorDetail(id); return; }
+  if(!true){ otvorDetail(id); return; }
   if(e.detail===2){ if(clickTimer){clearTimeout(clickTimer);clickTimer=null;} otvorDetail(id); return; }
   if(clickTimer){clearTimeout(clickTimer);clickTimer=null;}
   clickTimer=setTimeout(function(){
