@@ -1085,7 +1085,7 @@ function updateSelectionUI(){
 }
 window.handleRowClick=function(e,id){
   if(e.target.tagName==='BUTTON'||e.target.tagName==='INPUT') return;
-  if(clickTimer){clearTimeout(clickTimer);clickTimer=null;}
+  if(clickTimer){ clearTimeout(clickTimer); clickTimer=null; otvorDetail(id); return; }
   clickTimer=setTimeout(function(){
     clickTimer=null;
     if(e.shiftKey&&lastSelectedId){
@@ -1102,7 +1102,7 @@ window.handleRowClick=function(e,id){
       else { selectedIds.clear(); selectedIds.add(id); lastSelectedId=id; }
     }
     updateSelectionUI();
-  },220);
+  },300);
 };
 window.hromadneVymazat=async function(){
   if(!selectedIds.size){ alert('Žiadne objednávky nie sú označené.'); return; }
@@ -1116,7 +1116,7 @@ window.hromadneVymazat=async function(){
 // Historia selection
 window.handleRowClickHist=function(e,id){
   if(e.target.tagName==='BUTTON') return;
-  if(clickTimer){clearTimeout(clickTimer);clickTimer=null;}
+  if(clickTimer){ clearTimeout(clickTimer); clickTimer=null; otvorDetail(id); return; }
   clickTimer=setTimeout(function(){
     clickTimer=null;
     if(e.shiftKey&&lastSelectedIdHist){
@@ -1133,7 +1133,7 @@ window.handleRowClickHist=function(e,id){
       else { selectedIdsHist.clear(); selectedIdsHist.add(id); lastSelectedIdHist=id; }
     }
     updateSelectionUIHist();
-  },220);
+  },300);
 };
 function updateSelectionUIHist(){
   document.querySelectorAll('#historia-body tr[data-id]').forEach(row=>row.classList.toggle('row-selected',selectedIdsHist.has(row.dataset.id)));
