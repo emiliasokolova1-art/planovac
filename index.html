@@ -126,22 +126,21 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
       <button class="btn btn-sm" id="btn-nova" style="display:none" onclick="otvorModal()">+ Nová objednávka</button>
       <button class="btn btn-sm" onclick="toggleDark()">🌙</button>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
-        <button class="btn btn-sm btn-danger" onclick="odhlasit()">Odhlásiť</button>
-        <div style="font-size:11px;color:var(--text3)" id="user-label"></div>
-      </div>
+      <button class="btn btn-sm btn-danger" onclick="odhlasit()">Odhlásiť</button>
     </div>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);margin-bottom:1.5rem;flex-wrap:wrap;gap:8px">
+    <div style="display:flex;gap:4px;flex-wrap:wrap">
+      <div class="tab active" id="tab-tabulka" onclick="showSec('tabulka')" style="border-bottom:none">📋 Objednávky</div>
+      <div class="tab" id="tab-historia" onclick="showSec('historia')" style="border-bottom:none">🗂 História</div>
+      <div class="tab" id="tab-kalendar" onclick="showSec('kalendar')" style="border-bottom:none">🗓 Kalendár</div>
+      <div class="tab" id="tab-moje" onclick="showSec('moje')" style="border-bottom:none">👤 Moje merania</div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);padding-bottom:4px" id="user-label"></div>
   </div>
 
   <div id="notify-area"></div>
   <div id="edit-notify-area"></div>
-
-  <div class="tabs">
-    <div class="tab active" id="tab-tabulka" onclick="showSec('tabulka')">📋 Objednávky</div>
-    <div class="tab" id="tab-historia" onclick="showSec('historia')">🗂 História</div>
-    <div class="tab" id="tab-kalendar" onclick="showSec('kalendar')">🗓 Kalendár</div>
-    <div class="tab" id="tab-moje" onclick="showSec('moje')">👤 Moje merania</div>
-  </div>
 
   <div id="sec-tabulka" class="section active">
     <div class="filter-bar">
