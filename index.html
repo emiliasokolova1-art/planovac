@@ -765,7 +765,7 @@ window.renderTabulka=function(){
     h+='<td class="col-wrap">'+esc(o.miesto||'—')+'</td>';
     h+='<td class="col-fix"><span class="chip-stav '+stavClass(o.stav)+'">'+stavLabel(o.stav)+'</span></td>';
     h+='<td class="col-wrap">'+esc(o.poznamka||'')+'</td>';
-    h+='<td style="color:#e53e3e;min-width:50px;max-width:70px;word-break:break-word;white-space:normal;font-size:12px">'+esc(o.rozsah||'')+'</td>';
+    h+='<td style="color:#e53e3e;min-width:40px;max-width:60px;word-break:break-word;white-space:normal;font-size:12px">'+esc(o.rozsah||'')+'</td>';
     h+='<td class="col-fix" style="font-size:11px;color:var(--text3)">'+esc(videli.join(', ')||'—')+'</td>';
     h+='<td onclick="event.stopPropagation()" style="white-space:nowrap">';
     h+='<button class="btn btn-sm" onclick="editObjednavku(\''+o.id+'\')" >✏️</button> <button class="btn btn-sm btn-danger" onclick="vymazObjednavku(\''+o.id+'\')" title="Vymazať">×</button>'+(nevidena?' <button class="btn btn-sm" onclick="potvrditJednu(\''+o.id+'\')" >✓</button>':'');    h+='</td></tr>';
@@ -808,7 +808,7 @@ window.renderHistoria=function(){
     h+='<td class="col-wrap">'+esc(o.miesto||'—')+'</td>';
     h+='<td class="col-fix"><span class="chip-stav '+stavClass(o.stav)+'">'+stavLabel(o.stav)+'</span></td>';
     h+='<td class="col-wrap">'+esc(o.poznamka||'')+'</td>';
-    h+='<td style="color:#e53e3e;min-width:50px;max-width:70px;word-break:break-word;white-space:normal;font-size:12px">'+esc(o.rozsah||'')+'</td>';
+    h+='<td style="color:#e53e3e;min-width:40px;max-width:60px;word-break:break-word;white-space:normal;font-size:12px">'+esc(o.rozsah||'')+'</td>';
     h+='<td class="col-fix" style="font-size:11px;color:var(--text3)">'+esc(videli.join(', ')||'—')+'</td>';
     h+='<td onclick="event.stopPropagation()" style="white-space:nowrap">';
     if(isSef) h+='<button class="btn btn-sm" onclick="vychovatZHistorie(\''+o.id+'\')">↩</button> <button class="btn btn-sm btn-danger" onclick="vymazObjednavku(\''+o.id+'\')">×</button>';
@@ -848,7 +848,7 @@ window.renderMoje=function(){
     h+='<td class="col-wrap">'+esc(o.miesto||'—')+'</td>';
     h+='<td class="col-fix"><span class="chip-stav '+stavClass(o.stav)+'">'+stavLabel(o.stav)+'</span></td>';
     h+='<td class="col-wrap">'+esc(o.poznamka||'')+'</td>';
-    h+='<td style="color:#e53e3e;min-width:50px;max-width:70px;word-break:break-word;white-space:normal;font-size:12px">'+esc(o.rozsah||'')+'</td>';
+    h+='<td style="color:#e53e3e;min-width:40px;max-width:60px;word-break:break-word;white-space:normal;font-size:12px">'+esc(o.rozsah||'')+'</td>';
     h+='<td class="col-fix" style="font-size:11px;color:var(--text3)">'+esc(videli.join(', ')||'—')+'</td>';
     h+='<td onclick="event.stopPropagation()" style="white-space:nowrap"><button class="btn btn-sm" onclick="editObjednavku(\''+o.id+'\')">✏️</button></td>';
     h+='</tr>';
