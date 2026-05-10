@@ -805,7 +805,7 @@ window.renderHistoria=function(){
     h+='<td class="col-fix">'+esc(o.mobil||'—')+'</td>';
     h+='<td class="col-fix"><span class="chip-os os-'+esc(o.osoba||'')+'">'+esc(o.osoba||'—')+'</span></td>';
     h+='<td class="col-fix"><span class="chip-faktor">'+esc(o.faktor||'—')+'</span></td>';
-    h+='<td style="width:80px;max-width:80px;white-space:normal;word-break:break-word;overflow:hidden">'+(o.termin?formatDatum(o.termin):(o.terminText?'<span style="color:var(--text3);font-style:italic;white-space:normal;word-break:break-word">'+esc(o.terminText)+'</span>':'—'))+'</td>';
+    h+='<td style="width:80px;max-width:80px;white-space:normal;word-break:break-word;overflow:hidden">'+(o.termin?formatDatum(o.termin):(o.terminText?'<div style="color:var(--text3);font-style:italic;white-space:normal;word-break:break-word;max-width:90px">'+esc(o.terminText)+'</div>':'—'))+'</td>';
     h+='<td class="col-fix">'+esc(o.cas||'—')+'</td>';
     h+='<td class="col-wrap">'+esc(o.miesto||'—')+'</td>';
     h+='<td class="col-fix"><span class="chip-stav '+stavClass(o.stav)+'">'+stavLabel(o.stav)+'</span></td>';
@@ -845,7 +845,7 @@ window.renderMoje=function(){
     h+='<td class="col-fix">'+esc(o.mobil||'—')+'</td>';
     h+='<td class="col-fix"><span class="chip-os os-'+esc(o.osoba||'')+'">'+esc(o.osoba||'—')+'</span></td>';
     h+='<td class="col-fix"><span class="chip-faktor">'+esc(o.faktor||'—')+'</span></td>';
-    h+='<td style="width:80px;max-width:80px;white-space:normal;word-break:break-word;overflow:hidden">'+(o.termin?formatDatum(o.termin):(o.terminText?'<span style="color:var(--text3);font-style:italic;white-space:normal;word-break:break-word">'+esc(o.terminText)+'</span>':'<span style="color:var(--text4);font-style:italic">bez dátumu</span>'))+'</td>';
+    h+='<td style="width:80px;max-width:80px;white-space:normal;word-break:break-word;overflow:hidden">'+(o.termin?formatDatum(o.termin):(o.terminText?'<div style="color:var(--text3);font-style:italic;white-space:normal;word-break:break-word;max-width:90px">'+esc(o.terminText)+'</div>':'<span style="color:var(--text4);font-style:italic">bez dátumu</span>'))+'</td>';
     h+='<td class="col-fix">'+esc(o.cas||'—')+'</td>';
     h+='<td class="col-wrap">'+esc(o.miesto||'—')+'</td>';
     h+='<td class="col-fix"><span class="chip-stav '+stavClass(o.stav)+'">'+stavLabel(o.stav)+'</span></td>';
