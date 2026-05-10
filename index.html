@@ -50,7 +50,6 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
 .col-fix{white-space:nowrap}
 .col-wrap{white-space:normal;word-break:break-word;min-width:120px}
 .col-rozsah{white-space:normal;word-break:normal;width:100px;max-width:100px}
-.col-dat{width:80px;max-width:80px;white-space:normal;word-break:normal}
 .gc0{--gc:#7ec8f7}.gc1{--gc:#90d9a0}.gc2{--gc:#f9b87a}.gc3{--gc:#f48fb5}.gc4{--gc:#7dd8d0}.gc5{--gc:#f9e07a}
 .os-Lenka{background:#fde68a;color:#78350f;border-color:#f59e0b}
 .os-Katka{background:#ecfccb;color:#365314;border-color:#a3e635}
@@ -165,7 +164,7 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
             <th class="col-fix">Mobil</th>
             <th class="col-fix" onclick="sortBy('osoba')">Zodpovedný ↕</th>
             <th class="col-fix" onclick="sortBy('faktor')">Faktor ↕</th>
-            <th class="col-dat" onclick="sortBy('termin')">Termín ↕</th>
+            <th class="col-fix" onclick="sortBy('termin')">Termín ↕</th>
             <th class="col-fix">Čas</th>
             <th class="col-wrap">Miesto</th>
             <th class="col-fix" onclick="sortBy('stav')">Stav ↕</th>
@@ -205,7 +204,7 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
             <th class="col-fix">Mobil</th>
             <th class="col-fix">Zodpovedný</th>
             <th class="col-fix">Faktor</th>
-            <th class="col-dat">Termín</th>
+            <th class="col-fix">Termín</th>
             <th class="col-fix">Čas</th>
             <th class="col-wrap">Miesto</th>
             <th class="col-fix">Stav</th>
@@ -258,7 +257,7 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
             <th class="col-fix">Mobil</th>
             <th class="col-fix">Zodpovedný</th>
             <th class="col-fix">Faktor</th>
-            <th class="col-dat">Termín</th>
+            <th class="col-fix">Termín</th>
             <th class="col-fix">Čas</th>
             <th class="col-wrap">Miesto</th>
             <th class="col-fix">Stav</th>
@@ -805,7 +804,7 @@ window.renderHistoria=function(){
     h+='<td class="col-fix">'+esc(o.mobil||'—')+'</td>';
     h+='<td class="col-fix"><span class="chip-os os-'+esc(o.osoba||'')+'">'+esc(o.osoba||'—')+'</span></td>';
     h+='<td class="col-fix"><span class="chip-faktor">'+esc(o.faktor||'—')+'</span></td>';
-    h+='<td style="width:80px;max-width:80px;white-space:normal;word-break:break-word;overflow:hidden">'+(o.termin?formatDatum(o.termin):(o.terminText?'<div style="color:var(--text3);font-style:italic;white-space:normal;word-break:break-word;max-width:90px">'+esc(o.terminText)+'</div>':'—'))+'</td>';
+    h+='<td class="col-fix">'+(o.termin?formatDatum(o.termin):(o.terminText?'<span style="color:var(--text3);font-style:italic">'+esc(o.terminText)+'</span>':'—'))+'</td>';
     h+='<td class="col-fix">'+esc(o.cas||'—')+'</td>';
     h+='<td class="col-wrap">'+esc(o.miesto||'—')+'</td>';
     h+='<td class="col-fix"><span class="chip-stav '+stavClass(o.stav)+'">'+stavLabel(o.stav)+'</span></td>';
@@ -845,7 +844,7 @@ window.renderMoje=function(){
     h+='<td class="col-fix">'+esc(o.mobil||'—')+'</td>';
     h+='<td class="col-fix"><span class="chip-os os-'+esc(o.osoba||'')+'">'+esc(o.osoba||'—')+'</span></td>';
     h+='<td class="col-fix"><span class="chip-faktor">'+esc(o.faktor||'—')+'</span></td>';
-    h+='<td style="width:80px;max-width:80px;white-space:normal;word-break:break-word;overflow:hidden">'+(o.termin?formatDatum(o.termin):(o.terminText?'<div style="color:var(--text3);font-style:italic;white-space:normal;word-break:break-word;max-width:90px">'+esc(o.terminText)+'</div>':'<span style="color:var(--text4);font-style:italic">bez dátumu</span>'))+'</td>';
+    h+='<td class="col-fix">'+(o.termin?formatDatum(o.termin):(o.terminText?'<span style="color:var(--text3);font-style:italic">'+esc(o.terminText)+'</span>':'<span style="color:var(--text4);font-style:italic">bez dátumu</span>'))+'</td>';
     h+='<td class="col-fix">'+esc(o.cas||'—')+'</td>';
     h+='<td class="col-wrap">'+esc(o.miesto||'—')+'</td>';
     h+='<td class="col-fix"><span class="chip-stav '+stavClass(o.stav)+'">'+stavLabel(o.stav)+'</span></td>';
