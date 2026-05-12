@@ -295,7 +295,9 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
       <div class="field"><label>Stav</label>
         <select id="m-stav"><option>objednané</option><option>odmerané</option><option>domerať</option><option>čaká sa na podklady</option><option>vypracované - neschválené</option><option>vypracované - schválené</option><option>čaká sa na platbu</option><option>odovzdané</option></select>
       </div>
-      <div class="field"><label>Objednávateľ / firma</label><div class="ac-wrap"><input id="m-obj" placeholder="Názov firmy" autocomplete="off" oninput="acSearch(this.value)" onblur="setTimeout(()=>acHide(),200)"><div id="ac-list" class="ac-list" style="display:none"></div></div></div>
+      <div class="field"><label>Objednávateľ / firma</label>
+        <div class="ac-wrap" style="width:100%"><input id="m-obj" placeholder="Názov firmy" autocomplete="off" oninput="acSearch(this.value)" onblur="setTimeout(()=>acHide(),200)" style="width:100%"><div id="ac-list" class="ac-list" style="display:none"></div></div>
+      </div>
     </div>
     <!-- Riadok 2: Kontakt, Mobil, Email -->
     <div class="grid3" style="gap:12px;margin-bottom:12px">
@@ -1285,7 +1287,7 @@ async function acSearch(val){
       const data=await res.json();
       console.log('ORSF response:', JSON.stringify(data).slice(0,200));
       // ORSF vracia pole objektov alebo {results:[...]}
-      const items=Array.isArray(data)?data:(data.results||data.companies||data.data||[]);
+      const items=Array.isArray(data)?data:(data.hits||data.results||data.companies||data.data||[]);
       acRender(items, val);
     } catch(e){
       console.warn('ORSF error:', e.message);
