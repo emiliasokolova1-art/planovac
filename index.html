@@ -1280,26 +1280,17 @@ async function acSearch(val){
     list.style.display='block';
     list.innerHTML='<div class="ac-loading">Hľadám...</div>';
     try{
-      // ORSF API - bezplatné, verejné
       const res=await fetch('https://api.orsf.sk/v1/search?q='+encodeURIComponent(val)+'&limit=8');
-      if(!res.ok) throw new Error('ORSF nedostupné');
+      if(!res.ok) throw new Error('HTTP '+res.status);
       const data=await res.json();
-      acRender(data, val);
+      console.log('ORSF response:', JSON.stringify(data).slice(0,200));
+      // ORSF vracia pole objektov alebo {results:[...]}
+      const items=Array.isArray(data)?data:(data.results||data.companies||data.data||[]);
+      acRender(items, val);
     } catch(e){
-      // Záloha: RPO Statistics API
-      try{
-        const res2=await fetch('https://api.statistics.sk/rpo/v1/juridicalPersons?name='+encodeURIComponent(val)+'&size=8');
-        const data2=await res2.json();
-        const items=(data2.content||data2||[]).map(x=>({
-          name: x.fullNames?.[0]?.value || x.name || '',
-          address: x.addresses?.[0] ? ((x.addresses[0].street||'') + ' ' + (x.addresses[0].municipality?.value||'')) : '',
-          ico: x.identifiers?.[0]?.value || ''
-        }));
-        acRender(items, val);
-      } catch(e2){
-        list.innerHTML='<div class="ac-loading">Vyhľadávanie nedostupné</div>';
-        setTimeout(acHide, 2000);
-      }
+      console.warn('ORSF error:', e.message);
+      list.innerHTML='<div class="ac-loading">Vyhľadávanie nedostupné</div>';
+      setTimeout(acHide, 2000);
     }
   }, 350);
 }
@@ -1307,20 +1298,18 @@ function acRender(data, val){
   const list=gi('ac-list'); if(!list) return;
   if(!data||!data.length){ list.innerHTML='<div class="ac-loading">Žiadne výsledky</div>'; return; }
   let h='';
-  data.forEach((item,i)=>{
-    // ORSF vracia: {name, address, ico} alebo {fullName, registeredSeat}
-    const name=item.name||item.fullName||item.businessName||'';
-    const addr=item.address||item.registeredSeat||item.city||'';
-    const ico=item.ico||item.cin||item.identificationNumber||'';
+  data.slice(0,8).forEach(item=>{
+    // Skús rôzne možné názvy polí
+    const name=item.name||item.businessName||item.fullName||item.companyName||item.nazov||'';
+    const ico=item.nationalId||item.ico||item.cin||item.id||'';
+    const addr=item.address||item.city||item.municipality||'';
     if(!name) return;
-    // Bold matching part
-    // Zvýrazni zhodujúcu sa časť (case insensitive)
     const lname=name.toLowerCase(), lval=val.toLowerCase();
     const idx2=lname.indexOf(lval);
-    const boldName=idx2>=0 ? name.slice(0,idx2)+'<b>'+name.slice(idx2,idx2+val.length)+'</b>'+name.slice(idx2+val.length) : name;
-    h+='<div class="ac-item" onmousedown="acSelect(this)" data-name="'+name.replace(/"/g,'&quot;')+'">'; 
+    const boldName=idx2>=0?name.slice(0,idx2)+'<b>'+name.slice(idx2,idx2+val.length)+'</b>'+name.slice(idx2+val.length):name;
+    h+='<div class="ac-item" onmousedown="acSelect(this)" data-name="'+name.replace(/"/g,'&quot;')+'">';
     h+=boldName;
-    if(addr||ico) h+='<small>'+(ico?'IČO: '+ico+' · ':'')+addr+'</small>';
+    if(ico||addr) h+='<small>'+(ico?'IČO: '+ico:'')+(ico&&addr?' · ':'')+addr+'</small>';
     h+='</div>';
   });
   list.innerHTML=h||'<div class="ac-loading">Žiadne výsledky</div>';
