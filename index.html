@@ -1294,7 +1294,7 @@ async function acSearch(val){
       list.innerHTML='<div class="ac-loading">Vyhľadávanie nedostupné</div>';
       setTimeout(acHide, 2000);
     }
-  }, 350);
+  }, 200);
 }
 function acRender(data, val){
   const list=gi('ac-list'); if(!list) return;
