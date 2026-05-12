@@ -99,6 +99,14 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
 .ftab-x:hover{color:#c0392b}
 .ftab-panel{display:none}.ftab-panel.active{display:block}
 .ftab-bar{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:0;border-bottom:1px solid var(--border);padding-bottom:0}
+.ac-wrap{position:relative}
+.ac-list{position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--border2);border-radius:8px;box-shadow:var(--shadow);z-index:200;max-height:220px;overflow-y:auto;margin-top:2px}
+.ac-item{padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border3)}
+.ac-item:last-child{border-bottom:none}
+.ac-item:hover,.ac-item.active{background:var(--bg3)}
+.ac-item b{color:var(--text)}
+.ac-item small{color:var(--text3);font-size:11px;display:block}
+.ac-loading{padding:8px 12px;font-size:12px;color:var(--text3)}
 @media(max-width:700px){.grid2,.grid3{grid-template-columns:1fr}.app{padding:.5rem}}
 </style>
 </head>
@@ -287,7 +295,9 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
       <div class="field"><label>Stav</label>
         <select id="m-stav"><option>objednané</option><option>odmerané</option><option>domerať</option><option>čaká sa na podklady</option><option>vypracované - neschválené</option><option>vypracované - schválené</option><option>čaká sa na platbu</option><option>odovzdané</option></select>
       </div>
-      <div class="field"><label>Objednávateľ / firma</label><input id="m-obj" placeholder="Názov firmy"></div>
+      <div class="field"><label>Objednávateľ / firma</label>
+        <div class="ac-wrap" style="width:100%"><input id="m-obj" placeholder="Názov firmy" autocomplete="off" oninput="acSearch(this.value)" onblur="setTimeout(()=>acHide(),200)" style="width:100%"><div id="ac-list" class="ac-list" style="display:none"></div></div>
+      </div>
     </div>
     <!-- Riadok 2: Kontakt, Mobil, Email -->
     <div class="grid3" style="gap:12px;margin-bottom:12px">
@@ -1262,6 +1272,61 @@ function extractMesto(miesto){
   const parts=miesto.split(',');
   return parts[parts.length-1].trim();
 }
+// ── AUTOCOMPLETE OBJEDNÁVATEĽ ──────────────────────────
+let acTimer=null;
+async function acSearch(val){
+  const list=gi('ac-list'); if(!list) return;
+  if(val.length<3){ acHide(); return; }
+  clearTimeout(acTimer);
+  acTimer=setTimeout(async()=>{
+    list.style.display='block';
+    list.innerHTML='<div class="ac-loading">Hľadám...</div>';
+    try{
+      const res=await fetch('https://api.orsf.sk/v1/search?q='+encodeURIComponent(val)+'&limit=8');
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const data=await res.json();
+      console.log('ORSF response:', JSON.stringify(data).slice(0,200));
+      // ORSF vracia pole objektov alebo {results:[...]}
+      const items=Array.isArray(data)?data:(data.hits||data.results||data.companies||data.data||[]);
+      acRender(items, val);
+    } catch(e){
+      console.warn('ORSF error:', e.message);
+      list.innerHTML='<div class="ac-loading">Vyhľadávanie nedostupné</div>';
+      setTimeout(acHide, 2000);
+    }
+  }, 200);
+}
+function acRender(data, val){
+  const list=gi('ac-list'); if(!list) return;
+  if(!data||!data.length){ list.innerHTML='<div class="ac-loading">Žiadne výsledky</div>'; return; }
+  let h='';
+  data.slice(0,8).forEach(item=>{
+    // Skús rôzne možné názvy polí
+    const name=item.name||item.businessName||item.fullName||item.companyName||item.nazov||'';
+    const ico=item.nationalId||item.ico||item.cin||item.id||'';
+    const addr=item.address||item.city||item.municipality||'';
+    if(!name) return;
+    const lname=name.toLowerCase(), lval=val.toLowerCase();
+    const idx2=lname.indexOf(lval);
+    const boldName=idx2>=0?name.slice(0,idx2)+'<b>'+name.slice(idx2,idx2+val.length)+'</b>'+name.slice(idx2+val.length):name;
+    h+='<div class="ac-item" onmousedown="acSelect(this)" data-name="'+name.replace(/"/g,'&quot;')+'">';
+    h+=boldName;
+    if(ico||addr) h+='<small>'+(ico?'IČO: '+ico:'')+(ico&&addr?' · ':'')+addr+'</small>';
+    h+='</div>';
+  });
+  list.innerHTML=h||'<div class="ac-loading">Žiadne výsledky</div>';
+}
+function acSelect(el){
+  const name=el.dataset.name||el.getAttribute('data-name')||'';
+  sv('m-obj', name);
+  acHide();
+  gi('m-obj').focus();
+}
+function acHide(){
+  const list=gi('ac-list'); if(list) list.style.display='none';
+}
+window.acSearch=acSearch; window.acHide=acHide; window.acSelect=acSelect;
+
 function gi(id){ return document.getElementById(id); }
 function gv(id){ const e=gi(id); return e?e.value:''; }
 function sv(id,v){ const e=gi(id); if(e) e.value=v; }
