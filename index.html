@@ -99,6 +99,14 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
 .ftab-x:hover{color:#c0392b}
 .ftab-panel{display:none}.ftab-panel.active{display:block}
 .ftab-bar{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:0;border-bottom:1px solid var(--border);padding-bottom:0}
+.ac-wrap{position:relative}
+.ac-list{position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--border2);border-radius:8px;box-shadow:var(--shadow);z-index:200;max-height:220px;overflow-y:auto;margin-top:2px}
+.ac-item{padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border3)}
+.ac-item:last-child{border-bottom:none}
+.ac-item:hover,.ac-item.active{background:var(--bg3)}
+.ac-item b{color:var(--text)}
+.ac-item small{color:var(--text3);font-size:11px;display:block}
+.ac-loading{padding:8px 12px;font-size:12px;color:var(--text3)}
 @media(max-width:700px){.grid2,.grid3{grid-template-columns:1fr}.app{padding:.5rem}}
 </style>
 </head>
@@ -287,7 +295,7 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
       <div class="field"><label>Stav</label>
         <select id="m-stav"><option>objednané</option><option>odmerané</option><option>domerať</option><option>čaká sa na podklady</option><option>vypracované - neschválené</option><option>vypracované - schválené</option><option>čaká sa na platbu</option><option>odovzdané</option></select>
       </div>
-      <div class="field"><label>Objednávateľ / firma</label><input id="m-obj" placeholder="Názov firmy"></div>
+      <div class="field"><label>Objednávateľ / firma</label><div class="ac-wrap"><input id="m-obj" placeholder="Názov firmy" autocomplete="off" oninput="acSearch(this.value)" onblur="setTimeout(()=>acHide(),200)"><div id="ac-list" class="ac-list" style="display:none"></div></div></div>
     </div>
     <!-- Riadok 2: Kontakt, Mobil, Email -->
     <div class="grid3" style="gap:12px;margin-bottom:12px">
@@ -1262,6 +1270,72 @@ function extractMesto(miesto){
   const parts=miesto.split(',');
   return parts[parts.length-1].trim();
 }
+// ── AUTOCOMPLETE OBJEDNÁVATEĽ ──────────────────────────
+let acTimer=null;
+async function acSearch(val){
+  const list=gi('ac-list'); if(!list) return;
+  if(val.length<3){ acHide(); return; }
+  clearTimeout(acTimer);
+  acTimer=setTimeout(async()=>{
+    list.style.display='block';
+    list.innerHTML='<div class="ac-loading">Hľadám...</div>';
+    try{
+      // ORSF API - bezplatné, verejné
+      const res=await fetch('https://api.orsf.sk/v1/search?q='+encodeURIComponent(val)+'&limit=8');
+      if(!res.ok) throw new Error('ORSF nedostupné');
+      const data=await res.json();
+      acRender(data, val);
+    } catch(e){
+      // Záloha: RPO Statistics API
+      try{
+        const res2=await fetch('https://api.statistics.sk/rpo/v1/juridicalPersons?name='+encodeURIComponent(val)+'&size=8');
+        const data2=await res2.json();
+        const items=(data2.content||data2||[]).map(x=>({
+          name: x.fullNames?.[0]?.value || x.name || '',
+          address: x.addresses?.[0] ? ((x.addresses[0].street||'') + ' ' + (x.addresses[0].municipality?.value||'')) : '',
+          ico: x.identifiers?.[0]?.value || ''
+        }));
+        acRender(items, val);
+      } catch(e2){
+        list.innerHTML='<div class="ac-loading">Vyhľadávanie nedostupné</div>';
+        setTimeout(acHide, 2000);
+      }
+    }
+  }, 350);
+}
+function acRender(data, val){
+  const list=gi('ac-list'); if(!list) return;
+  if(!data||!data.length){ list.innerHTML='<div class="ac-loading">Žiadne výsledky</div>'; return; }
+  let h='';
+  data.forEach((item,i)=>{
+    // ORSF vracia: {name, address, ico} alebo {fullName, registeredSeat}
+    const name=item.name||item.fullName||item.businessName||'';
+    const addr=item.address||item.registeredSeat||item.city||'';
+    const ico=item.ico||item.cin||item.identificationNumber||'';
+    if(!name) return;
+    // Bold matching part
+    // Zvýrazni zhodujúcu sa časť (case insensitive)
+    const lname=name.toLowerCase(), lval=val.toLowerCase();
+    const idx2=lname.indexOf(lval);
+    const boldName=idx2>=0 ? name.slice(0,idx2)+'<b>'+name.slice(idx2,idx2+val.length)+'</b>'+name.slice(idx2+val.length) : name;
+    h+='<div class="ac-item" onmousedown="acSelect(this)" data-name="'+name.replace(/"/g,'&quot;')+'">'; 
+    h+=boldName;
+    if(addr||ico) h+='<small>'+(ico?'IČO: '+ico+' · ':'')+addr+'</small>';
+    h+='</div>';
+  });
+  list.innerHTML=h||'<div class="ac-loading">Žiadne výsledky</div>';
+}
+function acSelect(el){
+  const name=el.dataset.name||el.getAttribute('data-name')||'';
+  sv('m-obj', name);
+  acHide();
+  gi('m-obj').focus();
+}
+function acHide(){
+  const list=gi('ac-list'); if(list) list.style.display='none';
+}
+window.acSearch=acSearch; window.acHide=acHide; window.acSelect=acSelect;
+
 function gi(id){ return document.getElementById(id); }
 function gv(id){ const e=gi(id); return e?e.value:''; }
 function sv(id,v){ const e=gi(id); if(e) e.value=v; }
