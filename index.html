@@ -176,7 +176,8 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
       <input type="text" id="f-search" placeholder="🔍 Hľadať..." style="min-width:160px" oninput="renderTabulka()">
       <button class="btn btn-sm" onclick="resetFiltre('tabulka')">Zrušiť filtre</button>
       <button class="btn btn-sm" onclick="exportCSV('tabulka')">📥 Export CSV</button>
-      <label class="btn btn-sm" style="cursor:pointer">📤 Import CSV<input type="file" accept=".csv" style="display:none" onchange="importCSV(event,'tabulka')"></label>
+      <button class="btn btn-sm" onclick="triggerImportCSV('tabulka')">📤 Import CSV</button>
+      <input type="file" id="csv-input-tabulka" accept=".csv" style="display:none" onchange="importCSV(event,'tabulka')">
       <button class="btn btn-sm btn-danger" id="btn-hromadne-vymaz" style="display:none" onclick="hromadneVymazat()">🗑 Vymazať označené</button>
       <span id="sel-count" style="font-size:12px;color:var(--text3);align-self:center"></span>
     </div>
@@ -216,7 +217,8 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
       <input type="text" id="hf-search" placeholder="🔍 Hľadať..." style="min-width:160px" oninput="renderHistoria()">
       <button class="btn btn-sm" onclick="resetFiltre('historia')">Zrušiť filtre</button>
       <button class="btn btn-sm" onclick="exportCSV('historia')">📥 Export CSV</button>
-      <label class="btn btn-sm" style="cursor:pointer">📤 Import CSV<input type="file" accept=".csv" style="display:none" onchange="importCSV(event,'historia')"></label>
+      <button class="btn btn-sm" onclick="triggerImportCSV('historia')">📤 Import CSV</button>
+      <input type="file" id="csv-input-historia" accept=".csv" style="display:none" onchange="importCSV(event,'historia')">
       <button class="btn btn-sm btn-danger" id="btn-hromadne-vymaz-hist" style="display:none" onclick="hromadneVymazatHist()">🗑 Vymazať označené</button>
       <span id="sel-count-hist" style="font-size:12px;color:var(--text3);align-self:center"></span>
     </div>
@@ -296,6 +298,7 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
           <tbody id="moje-body"></tbody>
         </table>
       </div>
+    </div>
   </div>
 
   <div id="sec-lenka" class="section">
@@ -781,7 +784,7 @@ function renderNotify(){
   area.innerHTML=h;
 }
 // Mapa kľúčov polí na slovenské názvy pre notifikácie
-const POLE_NAZVY={evCislo:'Ev. číslo',objednavatel:'Objednávateľ',kontakt:'Kontakt',mobil:'Mobil',mail:'Email',osoba:'Osoba',faktor:'Faktor',termin:'Termín',terminDo:'Termín do',terminText:'Termín (text)',terminDoText:'Termín do (text)',cas:'Čas',miesto:'Miesto',stav:'Stav',poznamka:'Poznámka',rozsah:'Rozsah'};
+const POLE_NAZVY={evCislo:'Ev. číslo',objednavatel:'Objednávateľ',kontakt:'Kontakt',mobil:'Mobil',mail:'Email',osoba:'Osoba',faktor:'Faktor',termin:'Termín',terminDo:'Termín do',terminText:'Termín',terminDoText:'Termín do',cas:'Čas',miesto:'Miesto',stav:'Stav',poznamka:'Poznámka',rozsah:'Rozsah'};
 function renderEditNotify(){
   if(!currentOsoba) return;
   const ed=objednavky.filter(o=>o.lastEditBy&&o.lastEditBy!==currentOsoba&&(isSef||o.osoba===currentOsoba)&&!(o.editNotifPotv||[]).includes(currentOsoba));
@@ -789,7 +792,7 @@ function renderEditNotify(){
   if(!ed.length){ area.innerHTML=''; return; }
   let h='<div class="edit-notify"><b>✏️ Upravené objednávky ('+ed.length+'):</b>';
   ed.forEach(o=>{
-    const polia=(o.lastEditFields||[]).map(f=>POLE_NAZVY[f]||f).join(', ');
+    const polia=[...new Set((o.lastEditFields||[]).map(f=>POLE_NAZVY[f]||f))].join(', ');
     const zmenaPart=polia?' [zmena: '+esc(polia)+']':'';
     h+='<span class="notify-line">• P.č. '+esc(String(o.poradCislo||'?'))+' — Ev. č. '+esc(o.evCislo||'bez čísla')+' — '+esc(o.objednavatel||'?')+' [upravil(a): '+esc(o.lastEditBy||'?')+']'+zmenaPart+'</span>';
   });
@@ -1123,7 +1126,7 @@ window.ulozitObjednavku=async function(){
         mail:gv('m-mail'), termin:getTerminValue(), terminDo:getTerminDoValue(),
         terminText:getTerminText(), terminDoText:getTerminDoText(),
         cas:gv('m-cas'), miesto:gv('m-miesto'), stav:gv('m-stav'),
-        videli:[], archiv:false, updated:Date.now(), lastEditBy:currentOsoba, editNotifPotv:[]
+        videli:[], archiv:false, updated:Date.now(), lastEditBy:null, editNotifPotv:[]
       };
       const gId2=faktoryTabs.length>1?(Date.now().toString(36)+Math.random().toString(36).slice(2)):null;
       for(let ti=0;ti<faktoryTabs.length;ti++){
@@ -1152,7 +1155,7 @@ window.kopirovatObjednavku=async function(id){
   if(!confirm('Skopírovať objednávku '+(o.evCislo||o.objednavatel||'?')+'?')) return;
   const allSnap=await getDocs(collection(db,'objednavky'));
   let maxPC=0; allSnap.forEach(d=>{ const pc=d.data().poradCislo||0; if(pc>maxPC) maxPC=pc; });
-  const kopia={evCislo:o.evCislo||'',objednavatel:o.objednavatel||'',kontakt:o.kontakt||'',mobil:o.mobil||'',mail:o.mail||'',osoba:o.osoba||'',faktor:o.faktor||'',termin:o.termin||null,terminDo:o.terminDo||null,terminText:o.terminText||'',terminDoText:o.terminDoText||'',cas:o.cas||'',miesto:o.miesto||'',stav:o.stav||'objednané',poznamka:o.poznamka||'',poradCislo:maxPC+1,videli:[],archiv:false,created:Date.now(),updated:Date.now(),lastEditBy:currentOsoba,editNotifPotv:[]};
+  const kopia={evCislo:o.evCislo||'',objednavatel:o.objednavatel||'',kontakt:o.kontakt||'',mobil:o.mobil||'',mail:o.mail||'',osoba:o.osoba||'',faktor:o.faktor||'',termin:o.termin||null,terminDo:o.terminDo||null,terminText:o.terminText||'',terminDoText:o.terminDoText||'',cas:o.cas||'',miesto:o.miesto||'',stav:o.stav||'objednané',poznamka:o.poznamka||'',poradCislo:maxPC+1,videli:[],archiv:false,created:Date.now(),updated:Date.now(),lastEditBy:null,editNotifPotv:[]};
   try{ await addDoc(collection(db,'objednavky'),kopia); await nacitaj(); } catch(e){ alert('Chyba: '+e.message); }
 };
 
@@ -1313,9 +1316,13 @@ window.exportCSV=function(tab){
   a.download=(tab==='historia'?'historia':'objednavky')+'_export.csv';
   document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
 };
+window.triggerImportCSV=function(tab){
+  if(!confirm('Súbor CSV musí byť v kódovaní UTF-8')) return;
+  const inp=gi('csv-input-'+tab);
+  if(inp){ inp.value=''; inp.click(); }
+};
 window.importCSV=async function(event,tab){
   const file=event.target.files[0]; if(!file) return;
-  if(!confirm('Súbor CSV musí byť v kódovaní UTF-8')){ event.target.value=''; return; }
   const text=await file.text();
   const lines=text.split('\n').filter(l=>l.trim());
   if(lines.length<2){ alert('CSV je prázdne'); return; }
