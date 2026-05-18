@@ -97,7 +97,10 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
 .tbl-ulohy td{padding:4px 6px;border-bottom:1px solid var(--border3);vertical-align:middle}
 .tbl-ulohy tr.row-priorita td{background:#fce7f3}
 [data-theme="dark"] .tbl-ulohy tr.row-priorita td{background:#4a1f3a}
-.tbl-ulohy tr.row-hidden td{opacity:.45;background:var(--bg3)}
+.tbl-ulohy tr.row-skryte td{background:#dcfce7}
+[data-theme="dark"] .tbl-ulohy tr.row-skryte td{background:#1a3a2e}
+.tbl-ulohy tr.row-priorita.row-skryte td{background:linear-gradient(135deg,#fce7f3 50%,#dcfce7 50%)}
+[data-theme="dark"] .tbl-ulohy tr.row-priorita.row-skryte td{background:linear-gradient(135deg,#4a1f3a 50%,#1a3a2e 50%)}
 .tbl-ulohy input[type="text"],.tbl-ulohy input[type="date"],.tbl-ulohy select{width:100%;padding:5px 7px;border:1px solid transparent;border-radius:6px;background:transparent;color:var(--text);font-size:13px;font-family:inherit}
 .tbl-ulohy input[type="text"]:hover,.tbl-ulohy input[type="date"]:hover,.tbl-ulohy select:hover{border-color:var(--border)}
 .tbl-ulohy input[type="text"]:focus,.tbl-ulohy input[type="date"]:focus,.tbl-ulohy select:focus{outline:none;border-color:#999;background:var(--input)}
@@ -314,8 +317,8 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
             <th>Pracovná úloha</th>
             <th style="width:160px">Termín zadania</th>
             <th>Poznámka</th>
-            <th style="width:60px;text-align:center" title="Priorita">⭐</th>
-            <th style="width:50px;text-align:center" title="Skryť"></th>
+            <th style="width:80px;text-align:center">Priorita</th>
+            <th style="width:70px;text-align:center">Skryť</th>
           </tr></thead>
           <tbody id="ulohy-body-Lenka"></tbody>
         </table>
@@ -336,8 +339,8 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
             <th>Pracovná úloha</th>
             <th style="width:160px">Termín zadania</th>
             <th>Poznámka</th>
-            <th style="width:60px;text-align:center" title="Priorita">⭐</th>
-            <th style="width:50px;text-align:center" title="Skryť"></th>
+            <th style="width:80px;text-align:center">Priorita</th>
+            <th style="width:70px;text-align:center">Skryť</th>
           </tr></thead>
           <tbody id="ulohy-body-Katka"></tbody>
         </table>
@@ -358,8 +361,8 @@ body{font-family:system-ui,sans-serif;font-size:14px;background:var(--bg);color:
             <th>Pracovná úloha</th>
             <th style="width:160px">Termín zadania</th>
             <th>Poznámka</th>
-            <th style="width:60px;text-align:center" title="Priorita">⭐</th>
-            <th style="width:50px;text-align:center" title="Skryť"></th>
+            <th style="width:80px;text-align:center">Priorita</th>
+            <th style="width:70px;text-align:center">Skryť</th>
           </tr></thead>
           <tbody id="ulohy-body-Emilia"></tbody>
         </table>
@@ -1447,57 +1450,51 @@ function acHide(){
 window.acSearch=acSearch; window.acHide=acHide; window.acSelect=acSelect;
 
 // ── PRACOVNÉ ÚLOHY (Lenka / Katka / Emilia) ───────────────
-function ulohyRiadokHtml(r,osoba,jeSkryty){
-  const prioClass=r.priorita?'row-priorita':'';
-  const hideClass=jeSkryty?'row-hidden':'';
-  const trClass=(prioClass+' '+hideClass).trim();
-  const term=r.terminZadania||'';
+function ulohyJeRiadokPrazdny(r){
+  return !r.zaradenie && !r.ulohaText && !r.terminZadania && !r.poznamka && !r.priorita;
+}
+function ulohyRowHtml(r,osoba,isNew){
+  const priorita=r.priorita||false;
+  const skryte=(r.skryte||false)&&!isNew;
   const zarad=r.zaradenie||'';
+  const term=r.terminZadania||'';
+  const prioClass=priorita?'row-priorita':'';
+  const skryteClass=skryte?'row-skryte':'';
+  const trClass=(prioClass+' '+skryteClass).trim();
   let zarOpts='<option value=""'+(!zarad?' selected':'')+'></option>';
   FAKTORY.forEach(f=>{ zarOpts+='<option'+(zarad===f?' selected':'')+'>'+esc(f)+'</option>'; });
   zarOpts+='<option'+(zarad==='Iné'?' selected':'')+'>Iné</option>';
-  const skrytBtn=jeSkryty
-    ? '<button class="btn-row" onclick="obnovUlohu(this)" title="Obnoviť">👁‍🗨</button>'
-    : '<button class="btn-row" onclick="skryUlohu(this)" title="Skryť">👁</button>';
-  return '<tr data-id="'+esc(r.id)+'" data-osoba="'+esc(osoba)+'"'+(trClass?' class="'+trClass+'"':'')+'>'
+  const rowId=isNew?'new':r.id;
+  return '<tr data-id="'+esc(rowId)+'" data-osoba="'+esc(osoba)+'"'+(trClass?' class="'+trClass+'"':'')+'>'
     +'<td><select onchange="ulozPoleUlohy(this,\'zaradenie\')">'+zarOpts+'</select></td>'
     +'<td><input type="text" value="'+esc(r.ulohaText||'')+'" onblur="ulozPoleUlohy(this,\'ulohaText\')"></td>'
     +'<td><input type="date" value="'+esc(term)+'" onchange="ulozPoleUlohy(this,\'terminZadania\')"></td>'
     +'<td><input type="text" value="'+esc(r.poznamka||'')+'" onblur="ulozPoleUlohy(this,\'poznamka\')"></td>'
-    +'<td style="text-align:center"><input type="checkbox"'+(r.priorita?' checked':'')+' onchange="ulozPoleUlohy(this,\'priorita\')"></td>'
-    +'<td style="text-align:center">'+skrytBtn+'</td>'
-    +'</tr>';
-}
-function ulohyPrazdnyRiadokHtml(osoba){
-  let zarOpts='<option value="" selected></option>';
-  FAKTORY.forEach(f=>{ zarOpts+='<option>'+esc(f)+'</option>'; });
-  zarOpts+='<option>Iné</option>';
-  return '<tr data-id="new" data-osoba="'+esc(osoba)+'">'
-    +'<td><select onchange="ulozPoleUlohy(this,\'zaradenie\')">'+zarOpts+'</select></td>'
-    +'<td><input type="text" onblur="ulozPoleUlohy(this,\'ulohaText\')"></td>'
-    +'<td><input type="date" onchange="ulozPoleUlohy(this,\'terminZadania\')"></td>'
-    +'<td><input type="text" onblur="ulozPoleUlohy(this,\'poznamka\')"></td>'
-    +'<td style="text-align:center"><input type="checkbox" onchange="ulozPoleUlohy(this,\'priorita\')"></td>'
-    +'<td></td>'
+    +'<td style="text-align:center"><input type="checkbox"'+(priorita?' checked':'')+' onchange="ulozPoleUlohy(this,\'priorita\')"></td>'
+    +'<td style="text-align:center"><input type="checkbox"'+(skryte?' checked':'')+(isNew?' disabled':'')+' onchange="ulozPoleUlohy(this,\'skryte\')"></td>'
     +'</tr>';
 }
 function renderUlohy(osoba){
   const tbody=gi('ulohy-body-'+osoba); if(!tbody) return;
   // Zoradenie podľa created (poradie zápisu), nemenné
   const rows=pracovneUlohy.filter(r=>r.osoba===osoba).sort((a,b)=>(a.created||0)-(b.created||0));
-  const viditelne=rows.filter(r=>!r.skryte);
-  const skryte=rows.filter(r=>r.skryte);
+  const showHidden=zobrazitSkryte[osoba];
   let html='';
-  viditelne.forEach(r=>{ html+=ulohyRiadokHtml(r,osoba,false); });
-  if(zobrazitSkryte[osoba]){ skryte.forEach(r=>{ html+=ulohyRiadokHtml(r,osoba,true); }); }
-  html+=ulohyPrazdnyRiadokHtml(osoba);
+  rows.forEach(r=>{
+    // Ak skryté nie sú zobrazené, preskoč skryté riadky
+    if(r.skryte && !showHidden) return;
+    html+=ulohyRowHtml(r,osoba,false);
+  });
+  // Vždy jeden prázdny trailing riadok
+  html+=ulohyRowHtml({},osoba,true);
   tbody.innerHTML=html;
   // Aktualizuj tlačidlo prepínača skrytých
+  const pocetSkrytych=rows.filter(r=>r.skryte).length;
   const btn=gi('toggle-skryte-'+osoba.toLowerCase());
   if(btn){
-    btn.textContent=zobrazitSkryte[osoba]
-      ? '🙈 Skryť skryté ('+skryte.length+')'
-      : '🙈 Zobraziť skryté ('+skryte.length+')';
+    btn.textContent=showHidden
+      ? '🙈 Skryť skryté ('+pocetSkrytych+')'
+      : '🙈 Zobraziť skryté ('+pocetSkrytych+')';
   }
 }
 window.ulozPoleUlohy=async function(el,pole){
@@ -1516,48 +1513,41 @@ window.ulozPoleUlohy=async function(el,pole){
       };
       data[pole]=hodnota;
       const ref=await addDoc(collection(db,'pracovne_ulohy'),data);
-      // Aktualizuj DOM bez stratenia fokusu — zmeň data-id riadku a doplň nový prázdny riadok
+      // Aktualizuj DOM bez stratenia fokusu — zmeň data-id riadku a povoľ skryť checkbox
       tr.dataset.id=ref.id;
+      const skrytBox=tr.querySelector('td:last-child input[type="checkbox"]');
+      if(skrytBox) skrytBox.disabled=false;
       // Doplň nový prázdny riadok na koniec tela tabuľky
       const tbody=tr.parentElement;
-      tbody.insertAdjacentHTML('beforeend', ulohyPrazdnyRiadokHtml(osoba));
+      tbody.insertAdjacentHTML('beforeend', ulohyRowHtml({},osoba,true));
       // Aktualizuj lokálny stav
       pracovneUlohy.push({...data,id:ref.id});
       // Priorita — okamžite zafarbi riadok
       if(pole==='priorita') tr.classList.toggle('row-priorita',hodnota);
     } catch(e){ alert('Chyba uloženia úlohy: '+e.message); }
-  } else {
-    try{
-      const update={updated:Date.now()};
-      update[pole]=hodnota;
-      await updateDoc(doc(db,'pracovne_ulohy',rowId),update);
-      const row=pracovneUlohy.find(r=>r.id===rowId);
-      if(row) row[pole]=hodnota;
-      if(pole==='priorita') tr.classList.toggle('row-priorita',hodnota);
-    } catch(e){ alert('Chyba uloženia úlohy: '+e.message); }
+    return;
   }
-};
-window.skryUlohu=async function(btn){
-  const tr=btn.closest('tr'); if(!tr) return;
-  const rowId=tr.dataset.id; const osoba=tr.dataset.osoba;
-  if(rowId==='new') return;
+  // Existujúci riadok — uložiť zmenu
   try{
-    await updateDoc(doc(db,'pracovne_ulohy',rowId),{skryte:true,updated:Date.now()});
+    const update={updated:Date.now()};
+    update[pole]=hodnota;
+    await updateDoc(doc(db,'pracovne_ulohy',rowId),update);
     const row=pracovneUlohy.find(r=>r.id===rowId);
-    if(row) row.skryte=true;
-    renderUlohy(osoba);
-  } catch(e){ alert('Chyba: '+e.message); }
-};
-window.obnovUlohu=async function(btn){
-  const tr=btn.closest('tr'); if(!tr) return;
-  const rowId=tr.dataset.id; const osoba=tr.dataset.osoba;
-  if(rowId==='new') return;
-  try{
-    await updateDoc(doc(db,'pracovne_ulohy',rowId),{skryte:false,updated:Date.now()});
-    const row=pracovneUlohy.find(r=>r.id===rowId);
-    if(row) row.skryte=false;
-    renderUlohy(osoba);
-  } catch(e){ alert('Chyba: '+e.message); }
+    if(row) row[pole]=hodnota;
+    if(pole==='priorita') tr.classList.toggle('row-priorita',hodnota);
+    // Zmena skryte — re-render kvôli viditeľnosti a podfarbeniu
+    if(pole==='skryte'){
+      renderUlohy(osoba);
+      return;
+    }
+    // Skontroluj, či je riadok teraz úplne prázdny — ak áno, vymaž ho
+    if(row && ulohyJeRiadokPrazdny(row)){
+      await deleteDoc(doc(db,'pracovne_ulohy',rowId));
+      const idx=pracovneUlohy.findIndex(r=>r.id===rowId);
+      if(idx>=0) pracovneUlohy.splice(idx,1);
+      tr.remove();
+    }
+  } catch(e){ alert('Chyba uloženia úlohy: '+e.message); }
 };
 window.toggleSkryte=function(osoba){
   zobrazitSkryte[osoba]=!zobrazitSkryte[osoba];
